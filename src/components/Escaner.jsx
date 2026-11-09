@@ -6,6 +6,7 @@ import { BarcodeFormat, DecodeHintType } from "@zxing/library";
  * Escáner de códigos de barras con la cámara del celular, en vivo.
  * - continuo=true: se queda abierto y llama onCodigo por cada producto (modo caja).
  * - continuo=false: se cierra al leer el primer código (para formularios).
+ * - children: si se pasa, la pantalla se divide: cámara arriba y ese contenido abajo (el carrito).
  * Requiere HTTPS (o localhost) para que el navegador permita la cámara.
  */
 const FORMATOS = [
@@ -33,7 +34,7 @@ function pitido() {
   try { navigator.vibrate?.(40); } catch { /* sin vibración */ }
 }
 
-export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar, resultado }) {
+export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar, resultado, ignorar, children }) {
   const video = useRef(null);
   const controles = useRef(null);
   const ultimo = useRef({ codigo: "", visto: 0 });
@@ -41,6 +42,8 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
   onCodigoRef.current = onCodigo;
   const onCerrarRef = useRef(onCerrar);
   onCerrarRef.current = onCerrar;
+  const ignorarRef = useRef(ignorar);
+  ignorarRef.current = ignorar;
   const [error, setError] = useState("");
   const [leyendoFoto, setLeyendoFoto] = useState(false);
 
@@ -48,6 +51,8 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
     if (!abierto) return;
     let cancelado = false;
     setError("");
+    // Un código recién agregado no se vuelve a sumar mientras siga frente a la cámara
+    ultimo.current = { codigo: ignorarRef.current || "", visto: Date.now() };
     pitido.ctx?.resume?.();
 
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
@@ -106,27 +111,45 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
   }
 
   if (!abierto) return null;
+  const dividido = !!children;   // modo caja: cámara arriba, carrito abajo
+  const fotoBtn = (texto) => (
+    <label className={"btn dark foto-label" + (dividido ? " icon-txt" : "")} style={dividido ? undefined : { flex: 1 }}>
+      {leyendoFoto ? "Leyendo…" : texto}
+      <input className="hidden-input" type="file" accept="image/*" capture="environment" onChange={leerFoto} />
+    </label>
+  );
+
   return (
-    <div className="scan-ov" role="dialog" aria-label="Escáner de códigos">
-      <video ref={video} muted playsInline />
-      {!error && <div className="scan-frame" aria-hidden="true" />}
-      {error && <div className="scan-msg">{error}</div>}
-      <div className="scan-top">
-        <b>{continuo ? "Escanea los productos" : "Escanea el código"}</b>
-        <button className="btn dark icon" onClick={onCerrar} aria-label="Cerrar escáner">✕</button>
-      </div>
-      <div className="scan-bottom">
-        <div className={"scan-last" + (resultado?.ok ? " ok" : "")}>
-          {resultado ? resultado.texto : "Apunta al código de barras dentro del recuadro."}
+    <div className={"scan-ov" + (dividido ? " dividido" : "")} role="dialog" aria-label="Escáner de códigos">
+      <div className="scan-cam">
+        <video ref={video} muted playsInline />
+        {!error && <div className="scan-frame" aria-hidden="true" />}
+        {error && <div className="scan-msg">{error}</div>}
+        <div className="scan-top">
+          <b>{continuo ? "Escanea los productos" : "Escanea el código"}</b>
+          <div className="row" style={{ gap: 8 }}>
+            {dividido && fotoBtn("📷 Foto")}
+            <button className="btn dark icon" onClick={onCerrar} aria-label="Cerrar escáner">✕</button>
+          </div>
         </div>
-        <div className="row">
-          <label className="btn dark foto-label" style={{ flex: 1 }}>
-            {leyendoFoto ? "Leyendo…" : "📷 Tomar foto"}
-            <input className="hidden-input" type="file" accept="image/*" capture="environment" onChange={leerFoto} />
-          </label>
-          <button className="btn light" style={{ flex: 1 }} onClick={onCerrar}>{continuo ? "Listo" : "Cancelar"}</button>
-        </div>
+        {dividido && resultado && (
+          <div key={resultado.texto + resultado.n} className={"scan-pill" + (resultado.ok ? " ok" : "")}>{resultado.texto}</div>
+        )}
       </div>
+
+      {dividido ? (
+        <div className="scan-panel">{children}</div>
+      ) : (
+        <div className="scan-bottom">
+          <div className={"scan-last" + (resultado?.ok ? " ok" : "")}>
+            {resultado ? resultado.texto : "Apunta al código de barras dentro del recuadro."}
+          </div>
+          <div className="row">
+            {fotoBtn("📷 Tomar foto")}
+            <button className="btn light" style={{ flex: 1 }} onClick={onCerrar}>Cancelar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

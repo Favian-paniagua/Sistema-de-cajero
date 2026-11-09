@@ -8,6 +8,29 @@ import Escaner from "../components/EscanerLazy";
 import ProductoForm from "../components/ProductoForm";
 import Cobro from "../components/Cobro";
 
+/** Lista del carrito con botones para sumar, restar o quitar. Se usa en la caja y dentro del escáner. */
+function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
+  if (!carrito.length) {
+    return <ul className="cart-list"><li style={{ display: "block", border: 0 }}><div className="empty"><div className="ico">🛒</div>{vacio}</div></li></ul>;
+  }
+  return (
+    <ul className="cart-list">
+      {carrito.map((i) => (
+        <li key={i.productoId} className={i.productoId === resaltado ? "flash" : ""}>
+          <div><div className="ci-name">{i.nombre}</div><div className="ci-meta num">{dinero(i.precio)} c/u · {i.codigo}</div></div>
+          <div className="ci-sub num">{dinero(i.precio * i.cantidad)}</div>
+          <div className="row"><button className="btn ghost icon danger" aria-label={"Quitar " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -i.cantidad)}>✕</button></div>
+          <div className="qty">
+            <button aria-label={"Menos " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -1)}>−</button>
+            <span className="num">{i.cantidad}</span>
+            <button aria-label={"Más " + i.nombre} onClick={() => cambiarCantidad(i.productoId, 1)}>+</button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** Pantalla de venta: escanear o buscar productos, armar el carrito y cobrar. */
 export default function Caja({ carrito, setCarrito }) {
   const { avisar, confirmar } = useAvisos();
@@ -20,6 +43,8 @@ export default function Caja({ carrito, setCarrito }) {
   const [escaneando, setEscaneando] = useState(false);
   const [ultimoEscaneo, setUltimoEscaneo] = useState(null);
   const [nuevoCodigo, setNuevoCodigo] = useState(null);
+  const volverAEscanear = useRef(false);
+  const [ignorarCodigo, setIgnorarCodigo] = useState("");   // tras registrar un producto nuevo, se reabre la cámara
   const [cobrando, setCobrando] = useState(false);
   const [resaltado, setResaltado] = useState(null);
   const input = useRef(null);
@@ -53,9 +78,10 @@ export default function Caja({ carrito, setCarrito }) {
     const p = await buscarPorCodigo(codigo);
     if (p) {
       agregar(p);
-      setUltimoEscaneo({ ok: true, texto: `✓ ${p.nombre} · ${dinero(p.precio)}` });
+      setUltimoEscaneo((u) => ({ ok: true, texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 }));
       if (!escaneando) avisar("+1 " + p.nombre, 1200);
     } else {
+      volverAEscanear.current = escaneando;
       setEscaneando(false);
       setNuevoCodigo(codigo);
     }
@@ -103,7 +129,7 @@ export default function Caja({ carrito, setCarrito }) {
       <div className="caja">
         <div className="card pad">
           <div className="scanbar">
-            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setEscaneando(true); }}>📷 <span>Escanear</span></button>
+            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setIgnorarCodigo(""); setEscaneando(true); }}>📷 <span>Escanear</span></button>
             <div className="search">
               <input ref={input} className="f" value={q} placeholder="Código o nombre del producto" autoComplete="off" enterKeyHint="go"
                 style={{ minHeight: 56 }} onChange={(e) => { setQ(e.target.value); setSel(-1); }} onKeyDown={enter} />
@@ -121,22 +147,10 @@ export default function Caja({ carrito, setCarrito }) {
           </div>
           <p className="sub" style={{ margin: "10px 2px 0" }}>Escanea con la cámara, escribe el código o usa un lector USB (escribe solo y presiona Enter).</p>
 
-          <ul className="cart-list mt">
-            {carrito.length === 0 ? (
-              <li style={{ display: "block", border: 0 }}><div className="empty"><div className="ico">🛒</div>Escanea o busca un producto para empezar la venta.</div></li>
-            ) : carrito.map((i) => (
-              <li key={i.productoId} className={i.productoId === resaltado ? "flash" : ""}>
-                <div><div className="ci-name">{i.nombre}</div><div className="ci-meta num">{dinero(i.precio)} c/u · {i.codigo}</div></div>
-                <div className="ci-sub num">{dinero(i.precio * i.cantidad)}</div>
-                <div className="row"><button className="btn ghost icon danger" aria-label="Quitar" onClick={() => cambiarCantidad(i.productoId, -i.cantidad)}>✕</button></div>
-                <div className="qty">
-                  <button aria-label="Menos" onClick={() => cambiarCantidad(i.productoId, -1)}>−</button>
-                  <span className="num">{i.cantidad}</span>
-                  <button aria-label="Más" onClick={() => cambiarCantidad(i.productoId, 1)}>+</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="mt">
+            <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad}
+              vacio="Escanea o busca un producto para empezar la venta." />
+          </div>
         </div>
 
         <div className="pay-col">
@@ -156,11 +170,28 @@ export default function Caja({ carrito, setCarrito }) {
         </div>
       </div>
 
-      <Escaner abierto={escaneando} continuo resultado={ultimoEscaneo} onCodigo={porCodigo} onCerrar={() => setEscaneando(false)} />
+      {/* Escáner dividido: cámara arriba, carrito abajo (se puede sumar/restar sin cerrar la cámara) */}
+      <Escaner abierto={escaneando} continuo resultado={ultimoEscaneo} onCodigo={porCodigo} ignorar={ignorarCodigo} onCerrar={() => setEscaneando(false)}>
+        <div className="sp-list">
+          <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad}
+            vacio="Apunta la cámara al código de barras. Los productos aparecerán aquí." />
+        </div>
+        <div className="sp-foot">
+          <div className="sp-total">
+            <div className="sub">{totales.unidades} {totales.unidades === 1 ? "producto" : "productos"}</div>
+            <div className="amt num">{dinero(totales.total)}</div>
+          </div>
+          <button className="btn" onClick={() => setEscaneando(false)}>Listo</button>
+          <button className="btn primary" disabled={!carrito.length} onClick={() => { setEscaneando(false); setCobrando(true); }}>Cobrar</button>
+        </div>
+      </Escaner>
       {nuevoCodigo && (
         <ProductoForm producto={{ codigo: nuevoCodigo }} titulo="Producto nuevo" textoGuardar="Guardar y agregar"
           nota="Este código no está registrado. Complétalo una vez y quedará guardado."
-          onCerrar={() => setNuevoCodigo(null)} onGuardado={(p) => { agregar(p); avisar("Guardado y agregado: " + p.nombre); }} />
+          onCerrar={() => {
+            setNuevoCodigo(null);
+            if (volverAEscanear.current) { volverAEscanear.current = false; setEscaneando(true); }
+          }} onGuardado={(p) => { agregar(p); setIgnorarCodigo(p.codigo); avisar("Guardado y agregado: " + p.nombre); }} />
       )}
       {cobrando && <Cobro total={totales.total} unidades={totales.unidades} onCerrar={() => setCobrando(false)} onConfirmar={confirmarVenta} />}
     </section>
