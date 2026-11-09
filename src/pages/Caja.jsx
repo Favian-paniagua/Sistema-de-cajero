@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
 import { buscarPorCodigo, registrarVenta } from "../db/repositorio";
@@ -39,11 +38,6 @@ export default function Caja({ carrito, setCarrito }) {
     total: Math.round(carrito.reduce((a, i) => a + i.precio * i.cantidad, 0) * 100) / 100,
     unidades: carrito.reduce((a, i) => a + i.cantidad, 0),
   }), [carrito]);
-
-  useEffect(() => {
-    document.body.classList.toggle("has-cart", carrito.length > 0);
-    return () => document.body.classList.remove("has-cart");
-  }, [carrito.length]);
 
   function agregar(p, cantidad = 1) {
     setCarrito((c) => {
@@ -158,15 +152,8 @@ export default function Caja({ carrito, setCarrito }) {
               <div><div className="sub">Vendido hoy</div><div className="num" style={{ fontSize: 22, fontWeight: 700 }}>{dinero(vendidoHoy)}</div></div>
               <div style={{ textAlign: "right" }}><div className="sub">Ventas</div><div className="num" style={{ fontSize: 22, fontWeight: 700 }}>{ventasHoy.length}</div></div>
             </div>
-            <Link to="/dashboard" className="btn ghost mt" style={{ width: "100%", textDecoration: "none" }}>Ver dashboard →</Link>
           </div>
         </div>
-      </div>
-
-      {/* barra fija de cobro en celular */}
-      <div className="paybar">
-        <div><div className="sub">{totales.unidades} {totales.unidades === 1 ? "producto" : "productos"}</div><div className="amt num">{dinero(totales.total)}</div></div>
-        <button className="btn primary big" onClick={() => setCobrando(true)}>Cobrar</button>
       </div>
 
       <Escaner abierto={escaneando} continuo resultado={ultimoEscaneo} onCodigo={porCodigo} onCerrar={() => setEscaneando(false)} />

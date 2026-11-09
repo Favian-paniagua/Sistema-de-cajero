@@ -23,7 +23,7 @@ export default function Cobro({ total, unidades, onCerrar, onConfirmar }) {
   }
 
   return (
-    <Modal abierto onCerrar={onCerrar} titulo="Cobrar">
+    <Modal abierto arriba onCerrar={onCerrar} titulo="Cobrar">
       <div className="total-box" style={{ margin: "6px 0 16px" }}>
         <div className="amt num">{dinero(total)}</div>
         <div className="meta">{unidades} {unidades === 1 ? "producto" : "productos"}</div>

@@ -134,14 +134,7 @@ nav.bottom{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--su
 nav.bottom a{flex:1;text-align:center;text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;padding:6px 0;border-radius:10px}
 nav.bottom a .i{display:block;font-size:20px;line-height:1.2}
 nav.bottom a.active{color:var(--accent)}
-.paybar{position:fixed;left:0;right:0;bottom:64px;z-index:19;padding:10px 16px;background:var(--surface);border-top:1px solid var(--border);display:none;align-items:center;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,.06)}
-.paybar .amt{font-size:22px;font-weight:750;letter-spacing:-.01em}
-.paybar .btn{margin-left:auto;min-width:140px}
-body.has-cart.v-caja .paybar{display:flex}
-body.has-cart.v-caja main{padding-bottom:170px}
-@media(max-width:859px){body.has-cart.v-caja .toast{bottom:164px}}
-@media(min-width:860px){body.has-cart.v-caja .paybar{display:none}}
-@media(min-width:720px){nav.bottom{display:none}main{padding-bottom:40px}.paybar{bottom:0}}
+@media(min-width:720px){nav.bottom{display:none}main{padding-bottom:40px}}
 @media(max-width:719px){nav.tabs{display:none}}
 
 /* MODAL */
@@ -155,6 +148,11 @@ body.has-cart.v-caja main{padding-bottom:170px}
 .modal .acts .btn{flex:1}
 @keyframes fade{from{opacity:0}}
 @keyframes up{from{transform:translateY(24px);opacity:.6}}
+@keyframes down{from{transform:translateY(-24px);opacity:.6}}
+/* Ventana arriba (cobro): deja libre la parte de abajo para el teclado del celular */
+.ov.arriba{align-items:flex-start}
+.ov.arriba .modal{border-radius:0 0 20px 20px;max-height:100dvh;animation:down .2s cubic-bezier(.2,.8,.2,1)}
+@media(min-width:720px){.ov.arriba{padding-top:48px}.ov.arriba .modal{border-radius:20px}}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--surface-2);padding:4px;border-radius:12px}
 .seg button{border:0;background:transparent;border-radius:9px;padding:10px 6px;font-weight:600;cursor:pointer;color:var(--text-2)}
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
