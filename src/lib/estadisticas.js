@@ -2,8 +2,8 @@ import { claveDia, inicioDelDia, sumarDias, dosDigitos, r2 } from "./formato";
 
 export const RANGOS = [
   { id: "hoy", nombre: "Hoy" },
-  { id: "7d", nombre: "Últimos 7 días" },
-  { id: "30d", nombre: "Últimos 30 días" },
+  { id: "7d", nombre: "7 días" },
+  { id: "30d", nombre: "30 días" },
   { id: "mes", nombre: "Este mes" },
 ];
 

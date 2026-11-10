@@ -81,14 +81,14 @@ export default function Dashboard() {
 
       <div className="dgrid mt">
         <div className="card pad">
-          <h2>{rango === "hoy" ? "Ventas por hora (hoy)" : "Ventas por día"}</h2>
+          <h2>{rango === "hoy" ? "Ventas por hora (hoy)" : "Ventas por día"} <span className="sub" style={{ fontWeight: 400 }}>en Bs</span></h2>
           <div className="chart-wrap">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={datos.serie} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="etiqueta" tickLine={false} axisLine={{ stroke: "var(--border)" }} tick={{ fill: "var(--muted)", fontSize: 11 }} interval="preserveStartEnd" minTickGap={12} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fill: "var(--muted)", fontSize: 11 }} width={56} tickCount={5}
-                  tickFormatter={(v) => "Bs " + Number(v).toLocaleString("es-BO")} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fill: "var(--muted)", fontSize: 11 }} width={44} tickCount={5}
+                  tickFormatter={(v) => Number(v).toLocaleString("es-BO")} />
                 <Tooltip content={<TooltipVentas />} cursor={{ fill: "var(--surface-2)" }} />
                 <Bar dataKey="total" fill="var(--s1)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
               </BarChart>
