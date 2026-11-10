@@ -7,7 +7,9 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 - **Caja**: escaneo en vivo con la cámara (o foto, búsqueda por nombre, lector USB), carrito, cobro en efectivo/QR/tarjeta con cálculo de cambio.
 - **Productos**: inventario con stock, costo y alerta de stock mínimo. Importación masiva pegando desde Excel. Si escaneas un código nuevo, te pide los datos y lo guarda.
 - **Dashboard**: ventas, ganancia estimada, número de ventas y ticket promedio (hoy, 7 días, 30 días, este mes), gráfico por hora o por día, productos más vendidos, formas de pago, stock bajo, últimas ventas (con opción de anular).
-- **Respaldo**: descarga/restaura todos los datos (JSON) y exporta a Excel (.xlsx) con tres hojas: Ventas (con totales), Detalle por producto e Inventario.
+- **Respaldo**:
+  - **Cerrar caja**: guarda un registro del cierre y descarga un reporte PDF del día (total vendido, ganancia, ventas por forma de pago, cuánto se vendió de cada producto y el detalle de cada venta).
+  - Descarga/restaura todos los datos (JSON) y exporta a Excel (.xlsx) con tres hojas: Ventas (con totales), Detalle por producto e Inventario.
 
 ## Tecnologías
 
@@ -21,6 +23,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 | [Recharts](https://recharts.org) | Gráfico de ventas del dashboard |
 | [Lucide](https://lucide.dev) | Íconos de la interfaz |
 | [ExcelJS](https://github.com/exceljs/exceljs) | Exportación a Excel con formato |
+| [jsPDF](https://github.com/parallax/jsPDF) + [AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable) | Reporte PDF del cierre de caja |
 | CSS propio | Diseño adaptable a celular y computadora, modo claro/oscuro automático |
 
 ## Cómo ejecutarlo
@@ -85,6 +88,8 @@ src/
   lib/
     formato.js          formato de dinero (Bs) y fechas
     estadisticas.js     cálculos del dashboard
+    exportarExcel.js    archivo Excel de ventas e inventario
+    reporteCierre.js    resumen y PDF del cierre de caja
   components/
     Escaner.jsx         cámara en vivo + lectura por foto (ZXing)
     EscanerLazy.jsx     carga el escáner solo cuando se usa

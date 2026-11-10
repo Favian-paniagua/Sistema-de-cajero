@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
-import { exportarTodo, restaurarTodo } from "../db/repositorio";
-import { claveDia } from "../lib/formato";
+import { exportarTodo, restaurarTodo, cerrarCaja } from "../db/repositorio";
+import { claveDia, dinero } from "../lib/formato";
+import { resumenCierre, generarPdfCierre } from "../lib/reporteCierre";
 import { exportarExcel } from "../lib/exportarExcel";
 import { useAvisos } from "../components/Avisos";
-import { Download, FileSpreadsheet, Upload } from "lucide-react";
+import { Download, FileSpreadsheet, LockKeyhole, Upload } from "lucide-react";
 
 function descargar(nombre, contenido, tipo) {
   const blob = contenido instanceof Blob ? contenido : new Blob([contenido], { type: tipo });
@@ -21,6 +22,35 @@ export default function Respaldo() {
   const archivo = useRef(null);
   const [ocupado, setOcupado] = useState(false);
   const [exportando, setExportando] = useState(false);
+  const [cerrando, setCerrando] = useState(false);
+  const hoy = claveDia(new Date());
+  const ventasHoy = useLiveQuery(() => db.ventas.where("dia").equals(hoy).sortBy("ts"), [hoy], null);
+  const cierresHoy = useLiveQuery(() => db.cierres.where("dia").equals(hoy).sortBy("ts"), [hoy], []);
+  const ultimoCierre = cierresHoy[cierresHoy.length - 1];
+
+  /** Cierra la caja: guarda el registro del cierre y descarga el reporte del día en PDF. */
+  async function cerrar() {
+    const ventas = ventasHoy || [];
+    const total = ventas.reduce((a, v) => a + v.total, 0);
+    const horaUltimo = ultimoCierre && new Date(ultimoCierre.ts).toLocaleTimeString("es-BO", { hour: "2-digit", minute: "2-digit" });
+    const ok = await confirmar(
+      "¿Cerrar la caja de hoy?",
+      (ultimoCierre ? `Ya hiciste un cierre hoy a las ${horaUltimo}; este nuevo cierre incluirá todas las ventas del día. ` : "") +
+        `Se descargará el reporte en PDF con ${ventas.length} ${ventas.length === 1 ? "venta" : "ventas"} por ${dinero(total)}.`,
+      { boton: "Cerrar caja" }
+    );
+    if (!ok) return;
+    setCerrando(true);
+    try {
+      const r = resumenCierre(ventas);
+      const cierre = await cerrarCaja({ total: r.total, costo: r.costo, ganancia: r.ganancia, ventas: r.ventas, unidades: r.unidades, porMetodo: r.porMetodo });
+      const pdf = await generarPdfCierre({ ventas, cierre });
+      descargar(`cierre-de-caja-${cierre.dia}.pdf`, pdf);
+      avisar("Caja cerrada · reporte PDF descargado", 3000);
+    } catch (e) {
+      avisar("No se pudo cerrar la caja: " + e.message, 4000);
+    } finally { setCerrando(false); }
+  }
   const conteo = useLiveQuery(async () => ({ productos: await db.productos.count(), ventas: await db.ventas.count() }), [], null);
 
   async function exportarJSON() {
@@ -58,6 +88,27 @@ export default function Respaldo() {
   return (
     <section className="view on">
       <div className="card pad">
+        <h2>Cierre de caja</h2>
+        <p className="sub" style={{ marginTop: 0 }}>
+          Al cerrar se descarga un reporte en PDF con las ventas de hoy: total vendido, ganancia,
+          formas de pago y cuánto se vendió de cada producto.
+        </p>
+        {ventasHoy && (
+          <p className="num" style={{ margin: "8px 0 0" }}>
+            Hoy: <b>{dinero(ventasHoy.reduce((a, v) => a + v.total, 0))}</b> en <b>{ventasHoy.length}</b> {ventasHoy.length === 1 ? "venta" : "ventas"}
+          </p>
+        )}
+        {ultimoCierre && (
+          <p className="sub" style={{ margin: "4px 0 0" }}>
+            Última vez cerrada hoy a las {new Date(ultimoCierre.ts).toLocaleTimeString("es-BO", { hour: "2-digit", minute: "2-digit" })}
+          </p>
+        )}
+        <button className="btn primary mt2" onClick={cerrar} disabled={cerrando || !ventasHoy}>
+          {cerrando ? <><span className="spin" /> Generando reporte…</> : <><LockKeyhole size={18} /> Cerrar caja</>}
+        </button>
+      </div>
+
+      <div className="card pad mt">
         <h2>Tus datos</h2>
         <p className="sub" style={{ marginTop: 0 }}>
           Los productos y las ventas se guardan en este dispositivo (funciona sin internet).

@@ -109,19 +109,37 @@ export const ventasDesde = (ts) => db.ventas.where("ts").aboveOrEqual(ts).toArra
 /* ---------- Respaldo ---------- */
 
 export async function exportarTodo() {
-  const [productos, ventas] = await Promise.all([db.productos.toArray(), db.ventas.toArray()]);
-  return { app: "sistema-de-cajero", version: 1, exportado: new Date().toISOString(), productos, ventas };
+  const [productos, ventas, cierres] = await Promise.all([db.productos.toArray(), db.ventas.toArray(), db.cierres.toArray()]);
+  return { app: "sistema-de-cajero", version: 2, exportado: new Date().toISOString(), productos, ventas, cierres };
 }
 
 export async function restaurarTodo(datos) {
   if (!datos || !Array.isArray(datos.productos) || !Array.isArray(datos.ventas)) {
     throw new Error("El archivo no es un respaldo válido de Mi Caja.");
   }
-  await db.transaction("rw", db.productos, db.ventas, async () => {
+  const cierres = Array.isArray(datos.cierres) ? datos.cierres : [];   // respaldos antiguos no traen cierres
+  await db.transaction("rw", db.productos, db.ventas, db.cierres, async () => {
     await db.productos.clear();
     await db.ventas.clear();
+    await db.cierres.clear();
     await db.productos.bulkAdd(datos.productos);
     await db.ventas.bulkAdd(datos.ventas);
+    await db.cierres.bulkAdd(cierres);
   });
   return { productos: datos.productos.length, ventas: datos.ventas.length };
 }
+
+/* ---------- Cierre de caja ---------- */
+
+/**
+ * Cierra la caja del día: guarda un registro con el resumen y devuelve
+ * las ventas del día para armar el reporte. (No borra ni bloquea ventas.)
+ */
+export async function cerrarCaja(resumenDia) {
+  const ahora = new Date();
+  const cierre = { ts: ahora.getTime(), dia: claveDia(ahora), ...resumenDia };
+  cierre.id = await db.cierres.add(cierre);
+  return cierre;
+}
+
+export const cierresDelDia = (dia) => db.cierres.where("dia").equals(dia).sortBy("ts");
