@@ -135,8 +135,7 @@ export default function Cierre() {
         <h2>Exportar a Excel</h2>
         <p className="sub" style={{ marginTop: 0 }}>
           Descarga un Excel con <b>todas las ventas registradas juntas</b>: de todos los días, meses y años.
-          Trae tres hojas: <b>Ventas</b> (una fila por venta, con totales), <b>Detalle</b> (cada producto vendido)
-          y <b>Productos</b> (el inventario actual). Puedes filtrar por fecha, mes o forma de pago dentro de Excel.
+          Puedes filtrar por fecha, mes o forma de pago dentro de Excel.
         </p>
         {!historial && <Sk w={240} h={14} style={{ margin: "10px 0 0" }} />}
         {historial && (
