@@ -7,7 +7,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 - **Caja**: escaneo en vivo con la cámara (o foto, búsqueda por nombre, lector USB), carrito, cobro en efectivo/QR/tarjeta con cálculo de cambio.
 - **Productos**: inventario con stock, costo y alerta de stock mínimo. Importación masiva pegando desde Excel. Si escaneas un código nuevo, te pide los datos y lo guarda.
 - **Dashboard**: ventas, ganancia estimada, número de ventas y ticket promedio (hoy, 7 días, 30 días, este mes), gráfico por hora o por día, productos más vendidos, formas de pago, stock bajo, últimas ventas (con opción de anular).
-- **Respaldo**: descarga/restaura todos los datos (JSON) y exporta las ventas a Excel (CSV).
+- **Respaldo**: descarga/restaura todos los datos (JSON) y exporta a Excel (.xlsx) con tres hojas: Ventas (con totales), Detalle por producto e Inventario.
 
 ## Tecnologías
 
@@ -20,6 +20,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 | [ZXing](https://github.com/zxing-js/browser) | Lectura de códigos de barras (EAN-13, EAN-8, UPC, Code 128, Code 39, ITF, QR) |
 | [Recharts](https://recharts.org) | Gráfico de ventas del dashboard |
 | [Lucide](https://lucide.dev) | Íconos de la interfaz |
+| [ExcelJS](https://github.com/exceljs/exceljs) | Exportación a Excel con formato |
 | CSS propio | Diseño adaptable a celular y computadora, modo claro/oscuro automático |
 
 ## Cómo ejecutarlo

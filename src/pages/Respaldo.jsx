@@ -3,12 +3,13 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
 import { exportarTodo, restaurarTodo } from "../db/repositorio";
 import { claveDia } from "../lib/formato";
-import { METODOS } from "../lib/estadisticas";
+import { exportarExcel } from "../lib/exportarExcel";
 import { useAvisos } from "../components/Avisos";
 import { Download, FileSpreadsheet, Upload } from "lucide-react";
 
 function descargar(nombre, contenido, tipo) {
-  const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+  const blob = contenido instanceof Blob ? contenido : new Blob([contenido], { type: tipo });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = nombre; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -19,6 +20,7 @@ export default function Respaldo() {
   const { avisar, confirmar } = useAvisos();
   const archivo = useRef(null);
   const [ocupado, setOcupado] = useState(false);
+  const [exportando, setExportando] = useState(false);
   const conteo = useLiveQuery(async () => ({ productos: await db.productos.count(), ventas: await db.ventas.count() }), [], null);
 
   async function exportarJSON() {
@@ -27,18 +29,15 @@ export default function Respaldo() {
     avisar("Respaldo descargado");
   }
 
-  async function exportarCSV() {
-    const ventas = await db.ventas.orderBy("ts").toArray();
-    const filas = [["fecha", "hora", "forma_de_pago", "codigo", "producto", "cantidad", "precio", "subtotal", "total_venta"]];
-    for (const v of ventas) {
-      const d = new Date(v.ts);
-      for (const i of v.items || []) {
-        filas.push([claveDia(d), d.toTimeString().slice(0, 5), METODOS[v.metodo]?.nombre || v.metodo, i.codigo, i.nombre, i.cantidad, i.precio, i.precio * i.cantidad, v.total]);
-      }
-    }
-    const csv = filas.map((f) => f.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
-    descargar(`mi-caja-ventas-${claveDia(new Date())}.csv`, "﻿" + csv, "text/csv;charset=utf-8");
-    avisar("Ventas exportadas (se abre en Excel)");
+  async function exportarAExcel() {
+    setExportando(true);
+    try {
+      const archivo = await exportarExcel();
+      descargar(`mi-caja-ventas-${claveDia(new Date())}.xlsx`, archivo);
+      avisar("Excel descargado");
+    } catch (e) {
+      avisar("No se pudo crear el Excel: " + e.message, 4000);
+    } finally { setExportando(false); }
   }
 
   async function restaurar(e) {
@@ -67,7 +66,7 @@ export default function Respaldo() {
         {conteo && <p className="num"><b>{conteo.productos}</b> productos · <b>{conteo.ventas}</b> ventas guardadas</p>}
         <div className="row mt" style={{ flexWrap: "wrap" }}>
           <button className="btn primary" onClick={exportarJSON}><Download size={18} /> Descargar respaldo</button>
-          <button className="btn" onClick={exportarCSV}><FileSpreadsheet size={18} /> Exportar ventas a Excel (CSV)</button>
+          <button className="btn" onClick={exportarAExcel} disabled={exportando}>{exportando ? <span className="spin" /> : <><FileSpreadsheet size={18} /> Exportar a Excel</>}</button>
           <button className="btn" onClick={() => archivo.current?.click()} disabled={ocupado}>{ocupado ? <span className="spin" /> : <><Upload size={18} /> Restaurar respaldo…</>}</button>
           <input ref={archivo} className="hidden-input" type="file" accept="application/json,.json" onChange={restaurar} />
         </div>
