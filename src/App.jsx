@@ -3,8 +3,8 @@ import { HashRouter, NavLink, Navigate, Route, Routes, useLocation } from "react
 import { AvisosProvider } from "./components/Avisos";
 import Caja from "./pages/Caja";
 import Productos from "./pages/Productos";
-import Respaldo from "./pages/Respaldo";
-import { ReceiptText, Package, ChartColumn, DatabaseBackup, ScanBarcode } from "lucide-react";
+import Cierre from "./pages/Cierre";
+import { ReceiptText, Package, ChartColumn, LockKeyhole, ScanBarcode } from "lucide-react";
 
 // Los gráficos (Recharts) se cargan solo al abrir el Dashboard
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -13,7 +13,7 @@ const SECCIONES = [
   { ruta: "/caja", nombre: "Caja", Icono: ReceiptText },
   { ruta: "/productos", nombre: "Productos", Icono: Package },
   { ruta: "/dashboard", nombre: "Dashboard", Icono: ChartColumn },
-  { ruta: "/respaldo", nombre: "Respaldo", Icono: DatabaseBackup },
+  { ruta: "/cierre", nombre: "Cierre", Icono: LockKeyhole },
 ];
 
 function Layout() {
@@ -41,7 +41,8 @@ function Layout() {
           <Route path="/caja" element={<Caja carrito={carrito} setCarrito={setCarrito} />} />
           <Route path="/productos" element={<Productos />} />
           <Route path="/dashboard" element={<Suspense fallback={<div className="empty">Cargando…</div>}><Dashboard /></Suspense>} />
-          <Route path="/respaldo" element={<Respaldo />} />
+          <Route path="/cierre" element={<Cierre />} />
+          <Route path="/respaldo" element={<Navigate to="/cierre" replace />} />
           <Route path="*" element={<Navigate to="/caja" replace />} />
         </Routes>
       </main>

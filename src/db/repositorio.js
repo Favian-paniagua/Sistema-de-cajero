@@ -106,7 +106,7 @@ export async function anularVenta(id) {
 
 export const ventasDesde = (ts) => db.ventas.where("ts").aboveOrEqual(ts).toArray();
 
-/* ---------- Respaldo ---------- */
+/* ---------- Copia completa de los datos (sin botón en la app; útil para migrar al backend) ---------- */
 
 export async function exportarTodo() {
   const [productos, ventas, cierres] = await Promise.all([db.productos.toArray(), db.ventas.toArray(), db.cierres.toArray()]);

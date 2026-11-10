@@ -3,7 +3,7 @@ import Dexie from "dexie";
 /**
  * Base de datos local del navegador (IndexedDB) usando Dexie.
  * Los datos quedan guardados en el dispositivo donde se usa la caja,
- * incluso sin internet. Usa "Respaldo" para exportarlos o pasarlos a otro equipo.
+ * incluso sin internet. (Más adelante se sincronizará con un backend.)
  *
  * Tablas:
  *  - productos: { id, codigo, nombre, precio, costo, stock, minimo, actualizado }

@@ -1,12 +1,12 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
-import { exportarTodo, restaurarTodo, cerrarCaja } from "../db/repositorio";
+import { cerrarCaja } from "../db/repositorio";
 import { claveDia, dinero } from "../lib/formato";
 import { resumenCierre, generarPdfCierre } from "../lib/reporteCierre";
 import { exportarExcel } from "../lib/exportarExcel";
 import { useAvisos } from "../components/Avisos";
-import { Download, FileSpreadsheet, LockKeyhole, Upload } from "lucide-react";
+import { FileSpreadsheet, LockKeyhole } from "lucide-react";
 
 function descargar(nombre, contenido, tipo) {
   const blob = contenido instanceof Blob ? contenido : new Blob([contenido], { type: tipo });
@@ -16,11 +16,9 @@ function descargar(nombre, contenido, tipo) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** Respaldo: los datos viven en este dispositivo, así que conviene guardar una copia seguido. */
-export default function Respaldo() {
+/** Cierre: cierre de caja del día (PDF) y exportación del historial completo a Excel. */
+export default function Cierre() {
   const { avisar, confirmar } = useAvisos();
-  const archivo = useRef(null);
-  const [ocupado, setOcupado] = useState(false);
   const [exportando, setExportando] = useState(false);
   const [cerrando, setCerrando] = useState(false);
   const hoy = claveDia(new Date());
@@ -51,39 +49,23 @@ export default function Respaldo() {
       avisar("No se pudo cerrar la caja: " + e.message, 4000);
     } finally { setCerrando(false); }
   }
-  const conteo = useLiveQuery(async () => ({ productos: await db.productos.count(), ventas: await db.ventas.count() }), [], null);
-
-  async function exportarJSON() {
-    const datos = await exportarTodo();
-    descargar(`mi-caja-respaldo-${claveDia(new Date())}.json`, JSON.stringify(datos), "application/json");
-    avisar("Respaldo descargado");
-  }
 
   async function exportarAExcel() {
     setExportando(true);
     try {
       const archivo = await exportarExcel();
-      descargar(`mi-caja-ventas-${claveDia(new Date())}.xlsx`, archivo);
+      descargar(`mi-caja-historial-ventas-${claveDia(new Date())}.xlsx`, archivo);
       avisar("Excel descargado");
     } catch (e) {
       avisar("No se pudo crear el Excel: " + e.message, 4000);
     } finally { setExportando(false); }
   }
 
-  async function restaurar(e) {
-    const f = e.target.files?.[0];
-    e.target.value = "";
-    if (!f) return;
-    const ok = await confirmar("¿Restaurar respaldo?", "Se reemplazarán TODOS los productos y ventas de este dispositivo por los del archivo.", { boton: "Restaurar", peligro: true });
-    if (!ok) return;
-    setOcupado(true);
-    try {
-      const r = await restaurarTodo(JSON.parse(await f.text()));
-      avisar(`Restaurado: ${r.productos} productos y ${r.ventas} ventas`, 3500);
-    } catch (err) {
-      avisar("No se pudo restaurar: " + err.message, 4000);
-    } finally { setOcupado(false); }
-  }
+  const historial = useLiveQuery(async () => {
+    const n = await db.ventas.count();
+    const primera = await db.ventas.orderBy("ts").first();
+    return { n, desde: primera?.ts };
+  }, [], null);
 
   return (
     <section className="view on">
@@ -109,18 +91,22 @@ export default function Respaldo() {
       </div>
 
       <div className="card pad mt">
-        <h2>Tus datos</h2>
+        <h2>Exportar a Excel</h2>
         <p className="sub" style={{ marginTop: 0 }}>
-          Los productos y las ventas se guardan en este dispositivo (funciona sin internet).
-          Descarga un respaldo cada cierto tiempo y úsalo para pasar los datos a otro equipo.
+          Descarga un Excel con <b>todas las ventas registradas juntas</b>: de todos los días, meses y años.
+          Trae tres hojas: <b>Ventas</b> (una fila por venta, con totales), <b>Detalle</b> (cada producto vendido)
+          y <b>Productos</b> (el inventario actual). Puedes filtrar por fecha, mes o forma de pago dentro de Excel.
         </p>
-        {conteo && <p className="num"><b>{conteo.productos}</b> productos · <b>{conteo.ventas}</b> ventas guardadas</p>}
-        <div className="row mt" style={{ flexWrap: "wrap" }}>
-          <button className="btn primary" onClick={exportarJSON}><Download size={18} /> Descargar respaldo</button>
-          <button className="btn" onClick={exportarAExcel} disabled={exportando}>{exportando ? <span className="spin" /> : <><FileSpreadsheet size={18} /> Exportar a Excel</>}</button>
-          <button className="btn" onClick={() => archivo.current?.click()} disabled={ocupado}>{ocupado ? <span className="spin" /> : <><Upload size={18} /> Restaurar respaldo…</>}</button>
-          <input ref={archivo} className="hidden-input" type="file" accept="application/json,.json" onChange={restaurar} />
-        </div>
+        {historial && (
+          <p className="num" style={{ margin: "8px 0 0" }}>
+            {historial.n
+              ? <><b>{historial.n.toLocaleString("es-BO")}</b> {historial.n === 1 ? "venta" : "ventas"} desde el {new Date(historial.desde).toLocaleDateString("es-BO", { day: "numeric", month: "long", year: "numeric" })}</>
+              : "Todavía no hay ventas registradas."}
+          </p>
+        )}
+        <button className="btn mt2" onClick={exportarAExcel} disabled={exportando}>
+          {exportando ? <><span className="spin" /> Generando Excel…</> : <><FileSpreadsheet size={18} /> Exportar a Excel</>}
+        </button>
       </div>
     </section>
   );

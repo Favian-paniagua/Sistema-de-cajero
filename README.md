@@ -7,9 +7,9 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 - **Caja**: escaneo en vivo con la cámara (o foto, búsqueda por nombre, lector USB), carrito, cobro en efectivo/QR/tarjeta con cálculo de cambio.
 - **Productos**: inventario con stock, costo y alerta de stock mínimo. Importación masiva pegando desde Excel. Si escaneas un código nuevo, te pide los datos y lo guarda.
 - **Dashboard**: ventas, ganancia estimada, número de ventas y ticket promedio (hoy, 7 días, 30 días, este mes), gráfico por hora o por día, productos más vendidos, formas de pago, stock bajo, últimas ventas (con opción de anular).
-- **Respaldo**:
+- **Cierre**:
   - **Cerrar caja**: guarda un registro del cierre y descarga un reporte PDF del día (total vendido, ganancia, ventas por forma de pago, cuánto se vendió de cada producto y el detalle de cada venta).
-  - Descarga/restaura todos los datos (JSON) y exporta a Excel (.xlsx) con tres hojas: Ventas (con totales), Detalle por producto e Inventario.
+  - **Exportar a Excel**: todas las ventas registradas juntas (todos los días, meses y años) en un .xlsx con tres hojas: Ventas (con totales), Detalle por producto e Inventario.
 
 ## Tecnologías
 
@@ -17,7 +17,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 |---|---|
 | [React 19](https://react.dev) | Interfaz de usuario (componentes) |
 | [Vite](https://vite.dev) | Servidor de desarrollo y compilación |
-| [React Router](https://reactrouter.com) | Navegación entre Caja, Productos, Dashboard y Respaldo |
+| [React Router](https://reactrouter.com) | Navegación entre Caja, Productos, Dashboard y Cierre |
 | [Dexie.js](https://dexie.org) (IndexedDB) | Base de datos dentro del navegador: funciona sin internet |
 | [ZXing](https://github.com/zxing-js/browser) | Lectura de códigos de barras (EAN-13, EAN-8, UPC, Code 128, Code 39, ITF, QR) |
 | [Recharts](https://recharts.org) | Gráfico de ventas del dashboard |
@@ -70,8 +70,9 @@ Después, abre el enlace en el celular y usa "Agregar a la pantalla de inicio" p
 Los productos y las ventas se guardan **en el navegador del dispositivo** (IndexedDB). Por eso:
 
 - Funciona sin internet.
-- Cada dispositivo tiene sus propios datos. Usa **Respaldo** para pasar los datos a otro equipo.
-- Si borras los datos del navegador, se pierden: descarga un respaldo cada cierto tiempo.
+- Cada dispositivo tiene sus propios datos.
+- Si borras los datos del navegador, se pierden. El historial de ventas se puede descargar en **Cierre → Exportar a Excel**.
+- Está previsto agregar un backend con base de datos en la nube para compartir y asegurar los datos.
 
 Para compartir los datos entre varios dispositivos en tiempo real, reemplaza las funciones de `src/db/repositorio.js` por un servicio en la nube (por ejemplo Supabase o Firebase). El resto de la app no necesita cambios.
 
@@ -84,7 +85,7 @@ src/
   index.css             estilos
   db/
     database.js         esquema de la base de datos (Dexie)
-    repositorio.js      todas las operaciones de datos (productos, ventas, respaldo)
+    repositorio.js      todas las operaciones de datos (productos, ventas, cierres)
   lib/
     formato.js          formato de dinero (Bs) y fechas
     estadisticas.js     cálculos del dashboard
@@ -99,5 +100,5 @@ src/
     Modal.jsx           ventana emergente
     Avisos.jsx          mensajes y confirmaciones
   pages/
-    Caja.jsx  Productos.jsx  Dashboard.jsx  Respaldo.jsx
+    Caja.jsx  Productos.jsx  Dashboard.jsx  Cierre.jsx
 ```
