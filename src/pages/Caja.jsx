@@ -8,6 +8,7 @@ import Escaner from "../components/EscanerLazy";
 import Cobro from "../components/Cobro";
 import BuscadorProducto from "../components/BuscadorProducto";
 import { LockKeyholeOpen, Minus, Plus, ScanBarcode, ShoppingCart, X } from "lucide-react";
+import { EsqueletoCaja } from "../components/Esqueletos";
 
 /** Lista del carrito con botones para sumar, restar o quitar (se muestra dentro del escáner). */
 function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
@@ -135,7 +136,7 @@ export default function Caja({ carrito, setCarrito }) {
   const vendido = (turno?.ventas || []).reduce((a, v) => a + v.total, 0);
   const apertura = turno?.apertura;
 
-  if (!turno) return <section className="view on"><div className="empty">Cargando…</div></section>;
+  if (!turno) return <EsqueletoCaja />;
   if (!apertura) return <section className="view on"><div className="caja-sola"><AperturaCaja /></div></section>;
 
   return (

@@ -7,6 +7,7 @@ import { resumenCierre, generarPdfCierre } from "../lib/reporteCierre";
 import { exportarExcel } from "../lib/exportarExcel";
 import { useAvisos } from "../components/Avisos";
 import { FileDown, FileSpreadsheet, LockKeyhole } from "lucide-react";
+import { EsqueletoTurno, Sk } from "../components/Esqueletos";
 
 function descargar(nombre, contenido, tipo) {
   const blob = contenido instanceof Blob ? contenido : new Blob([contenido], { type: tipo });
@@ -94,7 +95,7 @@ export default function Cierre() {
       <div className="card pad">
         <h2>Cierre de caja</h2>
         {!turno ? (
-          <p className="sub">Cargando…</p>
+          <EsqueletoTurno />
         ) : apertura ? (
           <>
             <p className="sub" style={{ marginTop: 0 }}>
@@ -137,6 +138,7 @@ export default function Cierre() {
           Trae tres hojas: <b>Ventas</b> (una fila por venta, con totales), <b>Detalle</b> (cada producto vendido)
           y <b>Productos</b> (el inventario actual). Puedes filtrar por fecha, mes o forma de pago dentro de Excel.
         </p>
+        {!historial && <Sk w={240} h={14} style={{ margin: "10px 0 0" }} />}
         {historial && (
           <p className="num" style={{ margin: "8px 0 0" }}>
             {historial.n

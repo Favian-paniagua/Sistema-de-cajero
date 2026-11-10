@@ -231,3 +231,13 @@ nav.bottom a.active{color:var(--accent)}
 .scan-top .btn.dark{background:rgba(24,24,22,.5);border-color:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .foto-label{display:inline-flex;align-items:center;justify-content:center}
 .hidden-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* ESQUELETOS DE CARGA */
+.sk{display:block;flex-shrink:0;max-width:100%;background:linear-gradient(90deg,var(--surface-2) 25%,color-mix(in srgb,var(--surface-2) 55%,var(--surface)) 50%,var(--surface-2) 75%);background-size:200% 100%;animation:sk-brillo 1.3s ease-in-out infinite}
+@keyframes sk-brillo{from{background-position:150% 0}to{background-position:-50% 0}}
+.sk-col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.sk-chart{height:240px;display:flex;align-items:flex-end;gap:10px;padding-top:16px;border-bottom:1px solid var(--border)}
+.sk-chart .sk{flex:1}
+/* aparece tras un instante: si los datos llegan rápido, no se ve parpadear */
+.esq{animation:esq-aparece .25s ease .18s both}
+@keyframes esq-aparece{from{opacity:0}}

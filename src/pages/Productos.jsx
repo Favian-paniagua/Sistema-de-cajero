@@ -6,6 +6,7 @@ import { useAvisos } from "../components/Avisos";
 import ProductoForm from "../components/ProductoForm";
 import ImportarLista from "../components/ImportarLista";
 import { Package, PackagePlus, TriangleAlert, Upload } from "lucide-react";
+import { EsqueletoFilasProductos, Sk } from "../components/Esqueletos";
 
 /** Inventario: lista, búsqueda, alta, edición e importación de productos. */
 export default function Productos() {
@@ -31,11 +32,11 @@ export default function Productos() {
       <div className="card pad mt">
         <div className="row" style={{ justifyContent: "space-between", marginBottom: 4 }}>
           <h2 style={{ margin: 0 }}>Inventario</h2>
-          <span className="sub">{productos ? `${productos.length} ${productos.length === 1 ? "producto" : "productos"}` : ""}</span>
+          {productos ? <span className="sub">{`${productos.length} ${productos.length === 1 ? "producto" : "productos"}`}</span> : <Sk w={80} h={12} />}
         </div>
         <ul className="plist">
           {productos === null ? (
-            <li style={{ display: "block", cursor: "default" }}><div className="empty">Cargando…</div></li>
+            <EsqueletoFilasProductos />
           ) : productos.length === 0 ? (
             <li style={{ display: "block", cursor: "default" }}><div className="empty"><div className="ico"><Package size={34} strokeWidth={1.5} /></div>
               Aún no hay productos.<br />Agrégalos uno por uno, o pega tu lista con “Importar lista”.<br />

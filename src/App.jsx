@@ -5,6 +5,7 @@ import Caja from "./pages/Caja";
 import Productos from "./pages/Productos";
 import Cierre from "./pages/Cierre";
 import { ReceiptText, Package, ChartColumn, LockKeyhole, ScanBarcode } from "lucide-react";
+import { EsqueletoDashboard } from "./components/Esqueletos";
 
 // Los gráficos (Recharts) se cargan solo al abrir el Dashboard
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -40,7 +41,7 @@ function Layout() {
         <Routes>
           <Route path="/caja" element={<Caja carrito={carrito} setCarrito={setCarrito} />} />
           <Route path="/productos" element={<Productos />} />
-          <Route path="/dashboard" element={<Suspense fallback={<div className="empty">Cargando…</div>}><Dashboard /></Suspense>} />
+          <Route path="/dashboard" element={<Suspense fallback={<EsqueletoDashboard />}><Dashboard /></Suspense>} />
           <Route path="/cierre" element={<Cierre />} />
           <Route path="/respaldo" element={<Navigate to="/cierre" replace />} />
           <Route path="*" element={<Navigate to="/caja" replace />} />

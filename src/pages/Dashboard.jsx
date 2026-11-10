@@ -7,6 +7,7 @@ import { dinero } from "../lib/formato";
 import { RANGOS, METODOS, periodo, entre, resumen, serie, masVendidos, porMetodo } from "../lib/estadisticas";
 import { useAvisos } from "../components/Avisos";
 import { ArrowDown, ArrowUp, CircleCheck, TriangleAlert } from "lucide-react";
+import { EsqueletoDashboard } from "../components/Esqueletos";
 
 function Variacion({ actual, anterior, etiqueta }) {
   if (!anterior) return <div className="d">{actual ? `Sin ventas ${etiqueta}` : " "}</div>;
@@ -59,7 +60,7 @@ export default function Dashboard() {
     avisar("Venta anulada");
   }
 
-  if (!datos) return <section className="view on"><div className="empty">Cargando…</div></section>;
+  if (!datos) return <EsqueletoDashboard />;
   const { A, B } = datos;
   const totalMetodos = datos.metodos.reduce((a, m) => a + m.total, 0);
   const maxTop = datos.top[0]?.total || 1;
