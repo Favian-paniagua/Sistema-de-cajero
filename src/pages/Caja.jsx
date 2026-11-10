@@ -153,7 +153,6 @@ export default function Caja({ carrito, setCarrito }) {
             <div className="sub">{totales.unidades} {totales.unidades === 1 ? "producto" : "productos"}</div>
             <div className="amt num">{dinero(totales.total)}</div>
           </div>
-          <button className="btn" onClick={() => setEscaneando(false)}>Listo</button>
           <button className="btn primary" disabled={!carrito.length} onClick={() => { setEscaneando(false); setCobrando(true); }}>Cobrar</button>
         </div>
       </Escaner>
