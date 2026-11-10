@@ -19,6 +19,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 | [Dexie.js](https://dexie.org) (IndexedDB) | Base de datos dentro del navegador: funciona sin internet |
 | [ZXing](https://github.com/zxing-js/browser) | Lectura de códigos de barras (EAN-13, EAN-8, UPC, Code 128, Code 39, ITF, QR) |
 | [Recharts](https://recharts.org) | Gráfico de ventas del dashboard |
+| [Lucide](https://lucide.dev) | Íconos de la interfaz |
 | CSS propio | Diseño adaptable a celular y computadora, modo claro/oscuro automático |
 
 ## Cómo ejecutarlo
