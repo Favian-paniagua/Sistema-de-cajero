@@ -183,7 +183,12 @@ nav.bottom a.active{color:var(--accent)}
 .scan-pill{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);max-width:calc(100% - 24px);background:rgba(0,0,0,.75);color:#fff;font-weight:600;font-size:14px;padding:8px 14px;border-radius:999px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:pill .25s ease}
 .scan-pill.ok{background:rgba(12,120,60,.92)}
 @keyframes pill{from{opacity:0;transform:translate(-50%,8px)}}
-.btn.icon-txt{min-height:40px;padding:0 12px;font-size:14px}
+/* buscador dentro del escáner */
+.scan-search{flex:1;min-width:0}
+.scan-search input.f{background:rgba(255,255,255,.96);color:#111;border-color:transparent;font-size:16px}
+.scan-search input.f::placeholder{color:#6b6a65}
+.scan-search .sugg{z-index:5;color:var(--text)}
+.scan-search .sugg button{color:var(--text)}
 /* modo dividido: cámara arriba, carrito abajo */
 .scan-ov.dividido .scan-cam{flex:0 0 50%}
 .scan-panel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);color:var(--text);border-radius:18px 18px 0 0;margin-top:-14px;position:relative;z-index:1}

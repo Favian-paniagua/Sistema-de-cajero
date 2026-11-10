@@ -7,6 +7,7 @@ import { useAvisos } from "../components/Avisos";
 import Escaner from "../components/EscanerLazy";
 import ProductoForm from "../components/ProductoForm";
 import Cobro from "../components/Cobro";
+import BuscadorProducto from "../components/BuscadorProducto";
 
 /** Lista del carrito con botones para sumar, restar o quitar. Se usa en la caja y dentro del escáner. */
 function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
@@ -38,13 +39,11 @@ export default function Caja({ carrito, setCarrito }) {
   const hoy = claveDia(new Date());
   const ventasHoy = useLiveQuery(() => db.ventas.where("dia").equals(hoy).toArray(), [hoy], []);
 
-  const [q, setQ] = useState("");
-  const [sel, setSel] = useState(-1);
   const [escaneando, setEscaneando] = useState(false);
   const [ultimoEscaneo, setUltimoEscaneo] = useState(null);
   const [nuevoCodigo, setNuevoCodigo] = useState(null);
-  const volverAEscanear = useRef(false);
-  const [ignorarCodigo, setIgnorarCodigo] = useState("");   // tras registrar un producto nuevo, se reabre la cámara
+  const volverAEscanear = useRef(false);                     // tras registrar un producto nuevo, se reabre la cámara
+  const [ignorar, setIgnorar] = useState([]);                // y no vuelve a sumar lo que ya está en el carrito mientras siga enfocado
   const [cobrando, setCobrando] = useState(false);
   const [resaltado, setResaltado] = useState(null);
   const input = useRef(null);
@@ -52,12 +51,6 @@ export default function Caja({ carrito, setCarrito }) {
   useEffect(() => {
     if (window.matchMedia("(pointer: fine)").matches) input.current?.focus();
   }, []);
-
-  const sugerencias = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    if (t.length < 2) return [];
-    return productos.filter((p) => p.nombre.toLowerCase().includes(t) || String(p.codigo).includes(t)).slice(0, 6);
-  }, [q, productos]);
 
   const totales = useMemo(() => ({
     total: Math.round(carrito.reduce((a, i) => a + i.precio * i.cantidad, 0) * 100) / 100,
@@ -87,23 +80,6 @@ export default function Caja({ carrito, setCarrito }) {
     }
   }
 
-  function enter(e) {
-    if (e.key === "ArrowDown") { setSel((s) => Math.min(s + 1, sugerencias.length - 1)); e.preventDefault(); return; }
-    if (e.key === "ArrowUp") { setSel((s) => Math.max(s - 1, -1)); e.preventDefault(); return; }
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    const v = q.trim();
-    if (!v) return;
-    const exacto = productos.find((p) => String(p.codigo) === v);
-    if (sel >= 0 && sugerencias[sel]) agregar(sugerencias[sel]);
-    else if (exacto) agregar(exacto);
-    else if (/^\d{4,}$/.test(v)) porCodigo(v);          // código desconocido → registrar producto
-    else if (sugerencias.length === 1) agregar(sugerencias[0]);
-    else if (sugerencias.length > 1) { setSel(0); return; }
-    else porCodigo(v);
-    setQ(""); setSel(-1);
-  }
-
   const cambiarCantidad = (id, delta) =>
     setCarrito((c) => c.map((x) => (x.productoId === id ? { ...x, cantidad: x.cantidad + delta } : x)).filter((x) => x.cantidad > 0));
 
@@ -129,21 +105,8 @@ export default function Caja({ carrito, setCarrito }) {
       <div className="caja">
         <div className="card pad">
           <div className="scanbar">
-            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setIgnorarCodigo(""); setEscaneando(true); }}>📷 <span>Escanear</span></button>
-            <div className="search">
-              <input ref={input} className="f" value={q} placeholder="Código o nombre del producto" autoComplete="off" enterKeyHint="go"
-                style={{ minHeight: 56 }} onChange={(e) => { setQ(e.target.value); setSel(-1); }} onKeyDown={enter} />
-              {sugerencias.length > 0 && (
-                <div className="sugg" style={{ display: "block" }}>
-                  {sugerencias.map((p, i) => (
-                    <button key={p.id} className={i === sel ? "hl" : ""} onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { agregar(p); setQ(""); setSel(-1); }}>
-                      <span>{p.nombre}</span><span className="sub num">{dinero(p.precio)}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setIgnorar([]); setEscaneando(true); }}>📷 <span>Escanear</span></button>
+            <BuscadorProducto ref={input} productos={productos} onElegir={(p) => agregar(p)} onCodigo={porCodigo} />
           </div>
           <p className="sub" style={{ margin: "10px 2px 0" }}>Escanea con la cámara, escribe el código o usa un lector USB (escribe solo y presiona Enter).</p>
 
@@ -171,7 +134,10 @@ export default function Caja({ carrito, setCarrito }) {
       </div>
 
       {/* Escáner dividido: cámara arriba, carrito abajo (se puede sumar/restar sin cerrar la cámara) */}
-      <Escaner abierto={escaneando} continuo resultado={ultimoEscaneo} onCodigo={porCodigo} ignorar={ignorarCodigo} onCerrar={() => setEscaneando(false)}>
+      <Escaner abierto={escaneando} continuo resultado={ultimoEscaneo} onCodigo={porCodigo} ignorar={ignorar} onCerrar={() => setEscaneando(false)}
+        barra={<BuscadorProducto className="scan-search" alto={44} productos={productos} placeholder="Nombre o código del producto"
+          onElegir={(p) => { agregar(p); setUltimoEscaneo((u) => ({ ok: true, texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 })); }}
+          onCodigo={porCodigo} />}>
         <div className="sp-list">
           <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad}
             vacio="Apunta la cámara al código de barras. Los productos aparecerán aquí." />
@@ -191,7 +157,7 @@ export default function Caja({ carrito, setCarrito }) {
           onCerrar={() => {
             setNuevoCodigo(null);
             if (volverAEscanear.current) { volverAEscanear.current = false; setEscaneando(true); }
-          }} onGuardado={(p) => { agregar(p); setIgnorarCodigo(p.codigo); avisar("Guardado y agregado: " + p.nombre); }} />
+          }} onGuardado={(p) => { agregar(p); setIgnorar([...carrito.map((i) => i.codigo), p.codigo]); avisar("Guardado y agregado: " + p.nombre); }} />
       )}
       {cobrando && <Cobro total={totales.total} unidades={totales.unidades} onCerrar={() => setCobrando(false)} onConfirmar={confirmarVenta} />}
     </section>

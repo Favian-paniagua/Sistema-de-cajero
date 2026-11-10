@@ -7,6 +7,8 @@ import { BarcodeFormat, DecodeHintType } from "@zxing/library";
  * - continuo=true: se queda abierto y llama onCodigo por cada producto (modo caja).
  * - continuo=false: se cierra al leer el primer código (para formularios).
  * - children: si se pasa, la pantalla se divide: cámara arriba y ese contenido abajo (el carrito).
+ * - ignorar: lista de códigos que no se suman hasta que salgan de la cámara (al reabrirla).
+ * - barra: contenido para la parte superior en modo dividido (el buscador por nombre o código).
  * Requiere HTTPS (o localhost) para que el navegador permita la cámara.
  */
 const FORMATOS = [
@@ -34,10 +36,10 @@ function pitido() {
   try { navigator.vibrate?.(40); } catch { /* sin vibración */ }
 }
 
-export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar, resultado, ignorar, children }) {
+export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar, resultado, ignorar, barra, children }) {
   const video = useRef(null);
   const controles = useRef(null);
-  const ultimo = useRef({ codigo: "", visto: 0 });
+  const vistos = useRef(new Map());   // código → última vez que se vio en cámara
   const onCodigoRef = useRef(onCodigo);
   onCodigoRef.current = onCodigo;
   const onCerrarRef = useRef(onCerrar);
@@ -51,8 +53,8 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
     if (!abierto) return;
     let cancelado = false;
     setError("");
-    // Un código recién agregado no se vuelve a sumar mientras siga frente a la cámara
-    ultimo.current = { codigo: ignorarRef.current || "", visto: Date.now() };
+    // Los códigos indicados en "ignorar" no se vuelven a sumar mientras sigan frente a la cámara
+    vistos.current = new Map((ignorarRef.current || []).map((c) => [String(c), Date.now()]));
     pitido.ctx?.resume?.();
 
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
@@ -70,9 +72,9 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
           const ahora = Date.now();
           // Mientras el mismo código siga frente a la cámara, no se vuelve a sumar.
           // Para agregar otra unidad: aparta la cámara y vuelve a apuntar (o usa el botón +).
-          const u = ultimo.current;
-          if (codigo === u.codigo && ahora - u.visto < 1200) { u.visto = ahora; return; }
-          ultimo.current = { codigo, visto: ahora };
+          const visto = vistos.current.get(codigo);
+          vistos.current.set(codigo, ahora);
+          if (visto && ahora - visto < 1200) return;
           pitido();
           onCodigoRef.current?.(codigo);
           if (!continuo) { controles.current?.stop(); onCerrarRef.current?.(); }
@@ -113,7 +115,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
   if (!abierto) return null;
   const dividido = !!children;   // modo caja: cámara arriba, carrito abajo
   const fotoBtn = (texto) => (
-    <label className={"btn dark foto-label" + (dividido ? " icon-txt" : "")} style={dividido ? undefined : { flex: 1 }}>
+    <label className="btn dark foto-label" style={{ flex: 1 }}>
       {leyendoFoto ? "Leyendo…" : texto}
       <input className="hidden-input" type="file" accept="image/*" capture="environment" onChange={leerFoto} />
     </label>
@@ -126,11 +128,8 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
         {!error && <div className="scan-frame" aria-hidden="true" />}
         {error && <div className="scan-msg">{error}</div>}
         <div className="scan-top">
-          <b>{continuo ? "Escanea los productos" : "Escanea el código"}</b>
-          <div className="row" style={{ gap: 8 }}>
-            {dividido && fotoBtn("📷 Foto")}
-            <button className="btn dark icon" onClick={onCerrar} aria-label="Cerrar escáner">✕</button>
-          </div>
+          {dividido ? barra : <b>Escanea el código</b>}
+          <button className="btn dark icon" onClick={onCerrar} aria-label="Cerrar escáner" style={{ flexShrink: 0 }}>✕</button>
         </div>
         {dividido && resultado && (
           <div key={resultado.texto + resultado.n} className={"scan-pill" + (resultado.ok ? " ok" : "")}>{resultado.texto}</div>
