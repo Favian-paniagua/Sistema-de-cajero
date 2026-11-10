@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
-import { buscarPorCodigo, registrarVenta } from "../db/repositorio";
-import { dinero, claveDia } from "../lib/formato";
+import { buscarPorCodigo, registrarVenta, aperturaActual, abrirCaja, ventasDelTurno } from "../db/repositorio";
+import { dinero, dineroCorto, aNumero } from "../lib/formato";
 import { useAvisos } from "../components/Avisos";
 import Escaner from "../components/EscanerLazy";
 import Cobro from "../components/Cobro";
 import BuscadorProducto from "../components/BuscadorProducto";
-import { Minus, Plus, ScanBarcode, ShoppingCart, X } from "lucide-react";
+import { LockKeyholeOpen, Minus, Plus, ScanBarcode, ShoppingCart, X } from "lucide-react";
 
 /** Lista del carrito con botones para sumar, restar o quitar (se muestra dentro del escáner). */
 function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
@@ -32,12 +32,58 @@ function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
   );
 }
 
-/** Pantalla de venta: botón para escanear, total del carrito y cobro. */
+/** Recuadro de apertura de caja: registra con cuánto efectivo se empieza el turno. */
+function AperturaCaja({ onAbierta }) {
+  const { avisar } = useAvisos();
+  const [monto, setMonto] = useState("");
+  const [abriendo, setAbriendo] = useState(false);
+
+  async function abrir(e) {
+    e.preventDefault();
+    if (monto.trim() === "" || aNumero(monto) < 0) return avisar("Escribe con cuánto efectivo empiezas (puede ser 0).", 2600);
+    setAbriendo(true);
+    try {
+      const a = await abrirCaja(aNumero(monto));
+      avisar(`Caja abierta con ${dinero(a.efectivoInicial)}`);
+      onAbierta?.(a);
+    } catch (err) {
+      avisar("No se pudo abrir la caja: " + err.message, 4000);
+      setAbriendo(false);
+    }
+  }
+
+  return (
+    <form className="card pad apertura" onSubmit={abrir} noValidate>
+      <div className="apertura-ico"><LockKeyholeOpen size={30} strokeWidth={1.8} /></div>
+      <h2 style={{ margin: 0, fontSize: 20 }}>Apertura de caja</h2>
+      <p className="sub" style={{ margin: 0 }}>
+        Antes de vender, registra con cuánto efectivo (billetes y monedas) empiezas. Así, al cerrar,
+        sabrás cuánto debería haber en la caja.
+      </p>
+      <label className="l" htmlFor="efectivoInicial" style={{ alignSelf: "stretch", textAlign: "left", marginTop: 6 }}>Efectivo inicial (Bs)</label>
+      <input className="f num apertura-input" id="efectivoInicial" inputMode="decimal" placeholder="0,00"
+        value={monto} onChange={(e) => setMonto(e.target.value)} />
+      <div className="quick" style={{ justifyContent: "center", marginTop: 0 }}>
+        {[0, 50, 100, 200, 500].map((v) => (
+          <button type="button" key={v} onClick={() => setMonto(String(v))}>{v === 0 ? "Sin efectivo" : dineroCorto(v)}</button>
+        ))}
+      </div>
+      <button type="submit" className="btn primary big" style={{ alignSelf: "stretch" }} disabled={abriendo}>
+        {abriendo ? <span className="spin" /> : "Abrir caja"}
+      </button>
+    </form>
+  );
+}
+
+/** Pantalla de venta: apertura de caja y botón para escanear (el carrito y el cobro están en el escáner). */
 export default function Caja({ carrito, setCarrito }) {
-  const { avisar, confirmar } = useAvisos();
+  const { avisar } = useAvisos();
   const productos = useLiveQuery(() => db.productos.toArray(), [], []);
-  const hoy = claveDia(new Date());
-  const ventasHoy = useLiveQuery(() => db.ventas.where("dia").equals(hoy).toArray(), [hoy], []);
+  // Turno actual: la apertura en curso y lo vendido desde entonces
+  const turno = useLiveQuery(async () => {
+    const apertura = await aperturaActual();
+    return { apertura, ventas: apertura ? await ventasDelTurno(apertura) : [] };
+  }, [], null);
 
   const [escaneando, setEscaneando] = useState(false);
   const [ultimoEscaneo, setUltimoEscaneo] = useState(null);
@@ -75,10 +121,6 @@ export default function Caja({ carrito, setCarrito }) {
   const cambiarCantidad = (id, delta) =>
     setCarrito((c) => c.map((x) => (x.productoId === id ? { ...x, cantidad: x.cantidad + delta } : x)).filter((x) => x.cantidad > 0));
 
-  async function vaciar() {
-    if (await confirmar("¿Vaciar carrito?", "Se quitarán todos los productos de esta venta.", { boton: "Vaciar", peligro: true })) setCarrito([]);
-  }
-
   async function confirmarVenta(metodo, recibido) {
     try {
       const v = await registrarVenta(carrito, metodo, recibido);
@@ -90,7 +132,11 @@ export default function Caja({ carrito, setCarrito }) {
     }
   }
 
-  const vendidoHoy = ventasHoy.reduce((a, v) => a + v.total, 0);
+  const vendido = (turno?.ventas || []).reduce((a, v) => a + v.total, 0);
+  const apertura = turno?.apertura;
+
+  if (!turno) return <section className="view on"><div className="empty">Cargando…</div></section>;
+  if (!apertura) return <section className="view on"><div className="caja-sola"><AperturaCaja /></div></section>;
 
   return (
     <section className="view on">
@@ -104,18 +150,14 @@ export default function Caja({ carrito, setCarrito }) {
         </div>
 
         <div className="pay-col">
-          <div className="card pad total-box">
-            <div className="lbl">Total a cobrar</div>
-            <div className="amt num">{dinero(totales.total)}</div>
-            <div className="meta">{totales.unidades ? `${totales.unidades} ${totales.unidades === 1 ? "producto" : "productos"}` : "Sin productos"}</div>
-            <button className="btn primary big mt2" style={{ width: "100%" }} disabled={!carrito.length} onClick={() => setCobrando(true)}>Cobrar</button>
-            <button className="btn ghost mt" style={{ width: "100%" }} disabled={!carrito.length} onClick={vaciar}>Vaciar carrito</button>
-          </div>
-          <div className="card pad mt">
+          <div className="card pad">
             <div className="row" style={{ justifyContent: "space-between" }}>
-              <div><div className="sub">Vendido hoy</div><div className="num" style={{ fontSize: 22, fontWeight: 700 }}>{dinero(vendidoHoy)}</div></div>
-              <div style={{ textAlign: "right" }}><div className="sub">Ventas</div><div className="num" style={{ fontSize: 22, fontWeight: 700 }}>{ventasHoy.length}</div></div>
+              <div><div className="sub">Vendido en este turno</div><div className="num" style={{ fontSize: 22, fontWeight: 700 }}>{dinero(vendido)}</div></div>
+              <div style={{ textAlign: "right" }}><div className="sub">Ventas</div><div className="num" style={{ fontSize: 22, fontWeight: 700 }}>{turno.ventas.length}</div></div>
             </div>
+            <p className="sub num" style={{ margin: "10px 0 0" }}>
+              Caja abierta a las {new Date(apertura.ts).toLocaleTimeString("es-BO", { hour: "2-digit", minute: "2-digit" })} con {dinero(apertura.efectivoInicial)} de efectivo inicial.
+            </p>
           </div>
         </div>
       </div>

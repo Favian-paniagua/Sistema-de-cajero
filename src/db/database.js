@@ -8,7 +8,8 @@ import Dexie from "dexie";
  * Tablas:
  *  - productos: { id, codigo, nombre, precio, costo, stock, minimo, actualizado }
  *  - ventas:    { id, ts, dia, hora, metodo, total, costoTotal, unidades, recibido, cambio, items[] }
- *  - cierres:   { id, ts, dia, total, ganancia, ventas, unidades, porMetodo }  (un registro por cada cierre de caja)
+ *  - aperturas: { id, ts, dia, efectivoInicial, cerradaTs, cierreId }   (un registro por cada apertura de caja)
+ *  - cierres:   { id, ts, dia, aperturaId, aperturaTs, efectivoInicial, total, costo, ganancia, ventas, unidades, porMetodo }
  */
 export const db = new Dexie("sistema-de-cajero");
 
@@ -22,4 +23,12 @@ db.version(2).stores({
   productos: "++id, &codigo, nombre",
   ventas: "++id, ts, dia, metodo",
   cierres: "++id, ts, dia",
+});
+
+// v3: apertura de caja (efectivo inicial). Cada cierre queda ligado a su apertura.
+db.version(3).stores({
+  productos: "++id, &codigo, nombre",
+  ventas: "++id, ts, dia, metodo",
+  cierres: "++id, ts, dia",
+  aperturas: "++id, ts, dia",
 });

@@ -74,7 +74,11 @@ export async function generarPdfCierre({ ventas, cierre, nombreNegocio = "Mi Caj
   doc.setFont("helvetica", "bold"); doc.setFontSize(12);
   doc.text(limpiar(nombreNegocio), W - M, 14, { align: "right" });
   doc.setFont("helvetica", "normal"); doc.setFontSize(10.5);
-  doc.text(`Cerrado a las ${hora(cierre.ts)}`, W - M, 22, { align: "right" });
+  const mismoDia = cierre.aperturaTs && new Date(cierre.aperturaTs).toDateString() === fecha.toDateString();
+  const abierta = cierre.aperturaTs
+    ? (mismoDia ? hora(cierre.aperturaTs) : `${limpiar(new Date(cierre.aperturaTs).toLocaleDateString("es-BO", { day: "2-digit", month: "2-digit" }))} ${hora(cierre.aperturaTs)}`)
+    : null;
+  doc.text(abierta ? `Abierta ${abierta} - Cerrada ${hora(cierre.ts)}` : `Cerrada a las ${hora(cierre.ts)}`, W - M, 22, { align: "right" });
 
   /* Tarjetas de resumen */
   let y = 38;
@@ -112,6 +116,19 @@ export async function generarPdfCierre({ ventas, cierre, nombreNegocio = "Mi Caj
     alternateRowStyles: { fillColor: [250, 250, 248] },
   };
   const seguir = () => { y = doc.lastAutoTable.finalY + 10; };
+
+  /* Efectivo en caja: efectivo inicial de la apertura + ventas en efectivo */
+  const inicial = Number(cierre.efectivoInicial) || 0;
+  const ventasEfectivo = resumen.porMetodo.efectivo?.total || 0;
+  titulo("Efectivo en caja");
+  autoTable(doc, {
+    ...estilo, startY: y,
+    head: [["Efectivo inicial (apertura)", "Ventas en efectivo", "Efectivo esperado al cierre"]],
+    body: [[bs(inicial), bs(ventasEfectivo), bs(inicial + ventasEfectivo)]],
+    columnStyles: { 0: { halign: "right" }, 1: { halign: "right" }, 2: { halign: "right", fontStyle: "bold" } },
+    didParseCell: (d) => { if (d.section === "head") d.cell.styles.halign = "right"; },
+  });
+  seguir();
 
   if (!ventas.length) {
     doc.setTextColor(...GRIS); doc.setFont("helvetica", "normal"); doc.setFontSize(11);
@@ -165,7 +182,7 @@ export async function generarPdfCierre({ ventas, cierre, nombreNegocio = "Mi Caj
         limpiar((v.items || []).map((x) => `${x.cantidad} x ${x.nombre}`).join(", ")),
         entero(v.unidades), bs(v.total),
       ]),
-      foot: [["", "", "", "Total del día", entero(resumen.unidades), bs(resumen.total)]],
+      foot: [["", "", "", "Total del turno", entero(resumen.unidades), bs(resumen.total)]],
       columnStyles: { 0: { halign: "center", cellWidth: 11 }, 1: { cellWidth: 15 }, 2: { cellWidth: 27 }, 4: { halign: "center", cellWidth: 14 }, 5: { halign: "right", cellWidth: 26 } },
       didParseCell: (d) => {
         if (d.section === "head" || d.section === "foot") {
