@@ -34,7 +34,7 @@ export default function ImportarLista({ onCerrar }) {
   }
 
   return (
-    <Modal abierto onCerrar={onCerrar} titulo="Importar lista de productos"
+    <Modal abierto arriba onCerrar={onCerrar} titulo="Importar lista de productos"
       nota="Una línea por producto: código, nombre, precio, costo, stock. Puedes copiarla desde Excel (columnas en ese orden). Si separas con comas, usa punto para los decimales. Si el código ya existe, se actualiza.">
       <textarea className="f num mt" rows={8} value={texto} onChange={(e) => setTexto(e.target.value)} autoFocus
         placeholder={"7771234567890, Coca-Cola 2L, 15, 11.5, 24\n7790001112223, Galletas María, 4.5, 3, 40"} />

@@ -56,7 +56,7 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
 
   return (
     <>
-      <Modal abierto onCerrar={onCerrar} titulo={titulo || (editando ? "Editar producto" : "Nuevo producto")} nota={nota}>
+      <Modal abierto arriba onCerrar={onCerrar} titulo={titulo || (editando ? "Editar producto" : "Nuevo producto")} nota={nota}>
         <form onSubmit={guardar} noValidate className="mt2">
           <label className="l" htmlFor="f_codigo">Código de barras</label>
           <div className="row">
