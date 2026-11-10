@@ -8,7 +8,7 @@ import { dinero } from "../lib/formato";
  * - Sirve también con lectores USB, que escriben el código y presionan Enter.
  */
 const BuscadorProducto = forwardRef(function BuscadorProducto(
-  { productos, onElegir, onCodigo, placeholder = "Código o nombre del producto", className = "", alto = 56 },
+  { productos, onElegir, onCodigo, placeholder = "Nombre o código", className = "", alto = 56 },
   ref
 ) {
   const [q, setQ] = useState("");

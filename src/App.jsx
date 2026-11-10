@@ -4,15 +4,16 @@ import { AvisosProvider } from "./components/Avisos";
 import Caja from "./pages/Caja";
 import Productos from "./pages/Productos";
 import Respaldo from "./pages/Respaldo";
+import { ReceiptText, Package, ChartColumn, DatabaseBackup, ScanBarcode } from "lucide-react";
 
 // Los gráficos (Recharts) se cargan solo al abrir el Dashboard
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 const SECCIONES = [
-  { ruta: "/caja", nombre: "Caja", icono: "🧾" },
-  { ruta: "/productos", nombre: "Productos", icono: "📦" },
-  { ruta: "/dashboard", nombre: "Dashboard", icono: "📊" },
-  { ruta: "/respaldo", nombre: "Respaldo", icono: "💾" },
+  { ruta: "/caja", nombre: "Caja", Icono: ReceiptText },
+  { ruta: "/productos", nombre: "Productos", Icono: Package },
+  { ruta: "/dashboard", nombre: "Dashboard", Icono: ChartColumn },
+  { ruta: "/respaldo", nombre: "Respaldo", Icono: DatabaseBackup },
 ];
 
 function Layout() {
@@ -28,7 +29,7 @@ function Layout() {
     <>
       <header className="top">
         <div className="top-in">
-          <div className="brand"><span className="brand-dot">▦</span>Mi Caja</div>
+          <div className="brand"><span className="brand-dot"><ScanBarcode size={16} strokeWidth={2.2} /></span>Mi Caja</div>
           <nav className="tabs" aria-label="Secciones">
             {SECCIONES.map((s) => <NavLink key={s.ruta} to={s.ruta}>{s.nombre}</NavLink>)}
           </nav>
@@ -45,7 +46,7 @@ function Layout() {
         </Routes>
       </main>
       <nav className="bottom" aria-label="Secciones">
-        {SECCIONES.map((s) => <NavLink key={s.ruta} to={s.ruta}><span className="i">{s.icono}</span>{s.nombre}</NavLink>)}
+        {SECCIONES.map((s) => <NavLink key={s.ruta} to={s.ruta}><span className="i"><s.Icono size={22} strokeWidth={1.9} /></span>{s.nombre}</NavLink>)}
       </nav>
     </>
   );

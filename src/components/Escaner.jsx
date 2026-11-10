@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
+import { Camera, X } from "lucide-react";
 
 /**
  * Escáner de códigos de barras con la cámara del celular, en vivo.
@@ -116,7 +117,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
   const dividido = !!children;   // modo caja: cámara arriba, carrito abajo
   const fotoBtn = (texto) => (
     <label className="btn dark foto-label" style={{ flex: 1 }}>
-      {leyendoFoto ? "Leyendo…" : texto}
+      {leyendoFoto ? "Leyendo…" : <><Camera size={18} /> {texto}</>}
       <input className="hidden-input" type="file" accept="image/*" capture="environment" onChange={leerFoto} />
     </label>
   );
@@ -129,7 +130,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
         {error && <div className="scan-msg">{error}</div>}
         <div className="scan-top">
           {dividido ? barra : <b>Escanea el código</b>}
-          <button className="btn dark icon" onClick={onCerrar} aria-label="Cerrar escáner" style={{ flexShrink: 0 }}>✕</button>
+          <button className="btn dark icon" onClick={onCerrar} aria-label="Cerrar escáner" style={{ flexShrink: 0 }}><X size={20} /></button>
         </div>
         {dividido && resultado && (
           <div key={resultado.texto + resultado.n} className={"scan-pill" + (resultado.ok ? " ok" : "")}>{resultado.texto}</div>
@@ -144,7 +145,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
             {resultado ? resultado.texto : "Apunta al código de barras dentro del recuadro."}
           </div>
           <div className="row">
-            {fotoBtn("📷 Tomar foto")}
+            {fotoBtn("Tomar foto")}
             <button className="btn light" style={{ flex: 1 }} onClick={onCerrar}>Cancelar</button>
           </div>
         </div>

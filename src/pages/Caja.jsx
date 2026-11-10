@@ -8,11 +8,12 @@ import Escaner from "../components/EscanerLazy";
 import ProductoForm from "../components/ProductoForm";
 import Cobro from "../components/Cobro";
 import BuscadorProducto from "../components/BuscadorProducto";
+import { Minus, Plus, ScanBarcode, ShoppingCart, X } from "lucide-react";
 
 /** Lista del carrito con botones para sumar, restar o quitar. Se usa en la caja y dentro del escáner. */
 function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
   if (!carrito.length) {
-    return <ul className="cart-list"><li style={{ display: "block", border: 0 }}><div className="empty"><div className="ico">🛒</div>{vacio}</div></li></ul>;
+    return <ul className="cart-list"><li style={{ display: "block", border: 0 }}><div className="empty"><div className="ico"><ShoppingCart size={34} strokeWidth={1.5} /></div>{vacio}</div></li></ul>;
   }
   return (
     <ul className="cart-list">
@@ -20,11 +21,11 @@ function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
         <li key={i.productoId} className={i.productoId === resaltado ? "flash" : ""}>
           <div><div className="ci-name">{i.nombre}</div><div className="ci-meta num">{dinero(i.precio)} c/u · {i.codigo}</div></div>
           <div className="ci-sub num">{dinero(i.precio * i.cantidad)}</div>
-          <div className="row"><button className="btn ghost icon danger" aria-label={"Quitar " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -i.cantidad)}>✕</button></div>
+          <div className="row"><button className="btn ghost icon danger" aria-label={"Quitar " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -i.cantidad)}><X size={18} /></button></div>
           <div className="qty">
-            <button aria-label={"Menos " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -1)}>−</button>
+            <button aria-label={"Menos " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -1)}><Minus size={16} /></button>
             <span className="num">{i.cantidad}</span>
-            <button aria-label={"Más " + i.nombre} onClick={() => cambiarCantidad(i.productoId, 1)}>+</button>
+            <button aria-label={"Más " + i.nombre} onClick={() => cambiarCantidad(i.productoId, 1)}><Plus size={16} /></button>
           </div>
         </li>
       ))}
@@ -105,7 +106,7 @@ export default function Caja({ carrito, setCarrito }) {
       <div className="caja">
         <div className="card pad">
           <div className="scanbar">
-            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setIgnorar([]); setEscaneando(true); }}>📷 <span>Escanear</span></button>
+            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setIgnorar([]); setEscaneando(true); }}><ScanBarcode size={22} /> <span>Escanear</span></button>
             <BuscadorProducto ref={input} productos={productos} onElegir={(p) => agregar(p)} onCodigo={porCodigo} />
           </div>
           <p className="sub" style={{ margin: "10px 2px 0" }}>Escanea con la cámara, escribe el código o usa un lector USB (escribe solo y presiona Enter).</p>

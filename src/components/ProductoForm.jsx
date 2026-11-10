@@ -4,6 +4,7 @@ import Escaner from "./EscanerLazy";
 import { useAvisos } from "./Avisos";
 import { aNumero } from "../lib/formato";
 import { guardarProducto, eliminarProducto } from "../db/repositorio";
+import { ScanBarcode } from "lucide-react";
 
 const aTexto = (n) => (n == null || n === "" ? "" : String(n).replace(".", ","));
 
@@ -61,7 +62,7 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
           <label className="l" htmlFor="f_codigo">Código de barras</label>
           <div className="row">
             <input className="f num" id="f_codigo" value={f.codigo} onChange={cambiar("codigo")} placeholder="Ej. 7771234567890" autoFocus={!f.codigo} />
-            <button type="button" className="btn icon" onClick={() => setEscaneando(true)} aria-label="Escanear código" style={{ minHeight: 46, minWidth: 46 }}>📷</button>
+            <button type="button" className="btn icon" onClick={() => setEscaneando(true)} aria-label="Escanear código" style={{ minHeight: 46, minWidth: 46 }}><ScanBarcode size={20} /></button>
           </div>
           <label className="l mt" htmlFor="f_nombre">Nombre</label>
           <input className="f" id="f_nombre" value={f.nombre} onChange={cambiar("nombre")} placeholder="Ej. Coca-Cola 2L" autoFocus={!!f.codigo && !editando} />

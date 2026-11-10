@@ -5,6 +5,7 @@ import { exportarTodo, restaurarTodo } from "../db/repositorio";
 import { claveDia } from "../lib/formato";
 import { METODOS } from "../lib/estadisticas";
 import { useAvisos } from "../components/Avisos";
+import { Download, FileSpreadsheet, Upload } from "lucide-react";
 
 function descargar(nombre, contenido, tipo) {
   const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
@@ -65,9 +66,9 @@ export default function Respaldo() {
         </p>
         {conteo && <p className="num"><b>{conteo.productos}</b> productos · <b>{conteo.ventas}</b> ventas guardadas</p>}
         <div className="row mt" style={{ flexWrap: "wrap" }}>
-          <button className="btn primary" onClick={exportarJSON}>Descargar respaldo</button>
-          <button className="btn" onClick={exportarCSV}>Exportar ventas a Excel (CSV)</button>
-          <button className="btn" onClick={() => archivo.current?.click()} disabled={ocupado}>{ocupado ? <span className="spin" /> : "Restaurar respaldo…"}</button>
+          <button className="btn primary" onClick={exportarJSON}><Download size={18} /> Descargar respaldo</button>
+          <button className="btn" onClick={exportarCSV}><FileSpreadsheet size={18} /> Exportar ventas a Excel (CSV)</button>
+          <button className="btn" onClick={() => archivo.current?.click()} disabled={ocupado}>{ocupado ? <span className="spin" /> : <><Upload size={18} /> Restaurar respaldo…</>}</button>
           <input ref={archivo} className="hidden-input" type="file" accept="application/json,.json" onChange={restaurar} />
         </div>
       </div>

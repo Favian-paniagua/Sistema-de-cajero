@@ -6,12 +6,13 @@ import { anularVenta } from "../db/repositorio";
 import { dinero } from "../lib/formato";
 import { RANGOS, METODOS, periodo, entre, resumen, serie, masVendidos, porMetodo } from "../lib/estadisticas";
 import { useAvisos } from "../components/Avisos";
+import { ArrowDown, ArrowUp, CircleCheck, TriangleAlert } from "lucide-react";
 
 function Variacion({ actual, anterior, etiqueta }) {
   if (!anterior) return <div className="d">{actual ? `Sin ventas ${etiqueta}` : " "}</div>;
   const pct = ((actual - anterior) / Math.abs(anterior)) * 100;
   const sube = pct >= 0;
-  return <div className={"d " + (sube ? "up" : "down")}>{sube ? "▲" : "▼"} {Math.abs(pct).toFixed(0)}% vs {etiqueta}</div>;
+  return <div className={"d " + (sube ? "up" : "down")}>{sube ? <ArrowUp size={12} strokeWidth={2.5} /> : <ArrowDown size={12} strokeWidth={2.5} />} {Math.abs(pct).toFixed(0)}% vs {etiqueta}</div>;
 }
 
 function TooltipVentas({ active, payload }) {
@@ -138,8 +139,8 @@ export default function Dashboard() {
             {!productos.length ? <li><div className="empty" style={{ padding: 16, width: "100%" }}>Agrega productos para ver alertas de stock.</div></li>
               : bajos.length ? bajos.map((x) => (
                 <li key={x.id}><div className="grow"><div>{x.nombre}</div><div className="sub">Avisar bajo {x.minimo || 0} u</div></div>
-                  <span className="badge low">⚠ {x.stock || 0} u</span></li>
-              )) : <li><div className="sub" style={{ padding: "8px 0" }}>✓ Todo el inventario está sobre el mínimo.</div></li>}
+                  <span className="badge low"><TriangleAlert size={12} strokeWidth={2.4} />{x.stock || 0} u</span></li>
+              )) : <li><div className="sub" style={{ padding: "8px 0", display: "flex", alignItems: "center", gap: 6 }}><CircleCheck size={16} color="var(--good)" /> Todo el inventario está sobre el mínimo.</div></li>}
           </ul>
         </div>
 

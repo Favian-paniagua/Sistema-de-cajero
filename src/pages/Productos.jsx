@@ -5,6 +5,7 @@ import { dinero } from "../lib/formato";
 import { useAvisos } from "../components/Avisos";
 import ProductoForm from "../components/ProductoForm";
 import ImportarLista from "../components/ImportarLista";
+import { Package, PackagePlus, TriangleAlert, Upload } from "lucide-react";
 
 /** Inventario: lista, búsqueda, alta, edición e importación de productos. */
 export default function Productos() {
@@ -23,8 +24,8 @@ export default function Productos() {
     <section className="view on">
       <div className="row" style={{ flexWrap: "wrap" }}>
         <input className="f" placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} style={{ flex: 1, minWidth: 200 }} />
-        <button className="btn primary" onClick={() => setEditando({})}>+ Nuevo producto</button>
-        <button className="btn" onClick={() => setImportando(true)}>Importar lista</button>
+        <button className="btn primary" onClick={() => setEditando({})}><PackagePlus size={18} /> Nuevo producto</button>
+        <button className="btn" onClick={() => setImportando(true)}><Upload size={18} /> Importar lista</button>
       </div>
 
       <div className="card pad mt">
@@ -36,7 +37,7 @@ export default function Productos() {
           {productos === null ? (
             <li style={{ display: "block", cursor: "default" }}><div className="empty">Cargando…</div></li>
           ) : productos.length === 0 ? (
-            <li style={{ display: "block", cursor: "default" }}><div className="empty"><div className="ico">📦</div>
+            <li style={{ display: "block", cursor: "default" }}><div className="empty"><div className="ico"><Package size={34} strokeWidth={1.5} /></div>
               Aún no hay productos.<br />Agrégalos uno por uno, o pega tu lista con “Importar lista”.<br />
               También puedes escanear en la caja: si el código es nuevo, te pide los datos.</div></li>
           ) : lista.length === 0 ? (
@@ -49,7 +50,7 @@ export default function Productos() {
                   <div style={{ fontWeight: 600 }}>{p.nombre}</div>
                   <div className="sub num">{p.codigo}{p.costo ? ` · costo ${dinero(p.costo)}` : ""}</div>
                 </div>
-                <span className={"badge" + (bajo ? " low" : "")}>{bajo ? "⚠ " : ""}{p.stock || 0} u</span>
+                <span className={"badge" + (bajo ? " low" : "")}>{bajo && <TriangleAlert size={12} strokeWidth={2.4} />}{p.stock || 0} u</span>
                 <b className="num">{dinero(p.precio)}</b>
               </li>
             );
