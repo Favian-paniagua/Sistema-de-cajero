@@ -1,16 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
 import { buscarPorCodigo, registrarVenta } from "../db/repositorio";
 import { dinero, claveDia } from "../lib/formato";
 import { useAvisos } from "../components/Avisos";
 import Escaner from "../components/EscanerLazy";
-import ProductoForm from "../components/ProductoForm";
 import Cobro from "../components/Cobro";
 import BuscadorProducto from "../components/BuscadorProducto";
 import { Minus, Plus, ScanBarcode, ShoppingCart, X } from "lucide-react";
 
-/** Lista del carrito con botones para sumar, restar o quitar. Se usa en la caja y dentro del escáner. */
+/** Lista del carrito con botones para sumar, restar o quitar (se muestra dentro del escáner). */
 function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
   if (!carrito.length) {
     return <ul className="cart-list"><li style={{ display: "block", border: 0 }}><div className="empty"><div className="ico"><ShoppingCart size={34} strokeWidth={1.5} /></div>{vacio}</div></li></ul>;
@@ -33,7 +32,7 @@ function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
   );
 }
 
-/** Pantalla de venta: escanear o buscar productos, armar el carrito y cobrar. */
+/** Pantalla de venta: botón para escanear, total del carrito y cobro. */
 export default function Caja({ carrito, setCarrito }) {
   const { avisar, confirmar } = useAvisos();
   const productos = useLiveQuery(() => db.productos.toArray(), [], []);
@@ -42,14 +41,8 @@ export default function Caja({ carrito, setCarrito }) {
 
   const [escaneando, setEscaneando] = useState(false);
   const [ultimoEscaneo, setUltimoEscaneo] = useState(null);
-  const [nuevoCodigo, setNuevoCodigo] = useState(null);
   const [cobrando, setCobrando] = useState(false);
   const [resaltado, setResaltado] = useState(null);
-  const input = useRef(null);
-
-  useEffect(() => {
-    if (window.matchMedia("(pointer: fine)").matches) input.current?.focus();
-  }, []);
 
   const totales = useMemo(() => ({
     total: Math.round(carrito.reduce((a, i) => a + i.precio * i.cantidad, 0) * 100) / 100,
@@ -64,13 +57,6 @@ export default function Caja({ carrito, setCarrito }) {
     });
     setResaltado(p.id);
     setTimeout(() => setResaltado(null), 500);
-  }
-
-  /** Desde el buscador de la caja: si el código no existe, abre el formulario para registrarlo. */
-  async function porCodigo(codigo) {
-    const p = await buscarPorCodigo(codigo);
-    if (p) { agregar(p); avisar("+1 " + p.nombre, 1200); }
-    else setNuevoCodigo(codigo);
   }
 
   /** Desde el escáner: si el código no existe, solo avisa en rojo y la cámara sigue abierta. */
@@ -109,17 +95,12 @@ export default function Caja({ carrito, setCarrito }) {
   return (
     <section className="view on">
       <div className="caja">
-        <div className="card pad">
-          <div className="scanbar">
-            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setEscaneando(true); }}><ScanBarcode size={22} /> <span>Escanear</span></button>
-            <BuscadorProducto ref={input} productos={productos} onElegir={(p) => agregar(p)} onCodigo={porCodigo} />
-          </div>
-          <p className="sub" style={{ margin: "10px 2px 0" }}>Escanea con la cámara, escribe el código o usa un lector USB (escribe solo y presiona Enter).</p>
-
-          <div className="mt">
-            <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad}
-              vacio="Escanea o busca un producto para empezar la venta." />
-          </div>
+        <div className="card pad scan-hero">
+          <button className="scan-big" onClick={() => { setUltimoEscaneo(null); setEscaneando(true); }}>
+            <ScanBarcode size={56} strokeWidth={1.8} />
+            <span>Escanear</span>
+          </button>
+          <p className="sub">Toca para abrir la cámara. Ahí también puedes buscar por nombre o código y ajustar las cantidades.</p>
         </div>
 
         <div className="pay-col">
@@ -156,13 +137,6 @@ export default function Caja({ carrito, setCarrito }) {
           <button className="btn primary" disabled={!carrito.length} onClick={() => { setEscaneando(false); setCobrando(true); }}>Cobrar</button>
         </div>
       </Escaner>
-      {nuevoCodigo && (
-        <ProductoForm producto={{ codigo: nuevoCodigo }} titulo="Producto nuevo" textoGuardar="Guardar y agregar"
-          nota="Este código no está registrado. Complétalo una vez y quedará guardado."
-          onCerrar={() => {
-            setNuevoCodigo(null);
-          }} onGuardado={(p) => { agregar(p); avisar("Guardado y agregado: " + p.nombre); }} />
-      )}
       {cobrando && <Cobro total={totales.total} unidades={totales.unidades} onCerrar={() => setCobrando(false)} onConfirmar={confirmarVenta} />}
     </section>
   );

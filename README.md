@@ -4,7 +4,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 
 ## Funciones
 
-- **Caja**: escaneo en vivo con la cámara (o foto, búsqueda por nombre, lector USB), carrito, cobro en efectivo/QR/tarjeta con cálculo de cambio.
+- **Caja**: un botón grande para escanear. Al tocarlo se abre la cámara en vivo con un buscador por nombre o código arriba y el carrito abajo (sumar, restar o quitar); los códigos no registrados muestran un aviso rojo. Luego se cobra en efectivo/QR/tarjeta con cálculo de cambio.
 - **Productos**: inventario con stock, costo y alerta de stock mínimo. Importación masiva pegando desde Excel. Si escaneas un código nuevo, te pide los datos y lo guarda.
 - **Dashboard**: ventas, ganancia estimada, número de ventas y ticket promedio (hoy, 7 días, 30 días, este mes), gráfico por hora o por día, productos más vendidos, formas de pago, stock bajo, últimas ventas (con opción de anular).
 - **Cierre**:
