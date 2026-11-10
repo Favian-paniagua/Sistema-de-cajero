@@ -185,6 +185,7 @@ nav.bottom a.active{color:var(--accent)}
 .scan-msg{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);text-align:center;color:#fff;font-size:15px;padding:20px;background:rgba(0,0,0,.7);border-radius:14px}
 .scan-pill{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);max-width:calc(100% - 24px);background:rgba(0,0,0,.75);color:#fff;font-weight:600;font-size:14px;padding:8px 14px;border-radius:999px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:pill .25s ease}
 .scan-pill.ok{background:rgba(12,120,60,.92)}
+.scan-pill.error{background:rgba(208,59,59,.95)}
 @keyframes pill{from{opacity:0;transform:translate(-50%,8px)}}
 /* buscador dentro del escáner */
 .scan-search{flex:1;min-width:0}

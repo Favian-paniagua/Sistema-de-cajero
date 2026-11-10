@@ -8,7 +8,7 @@ import { Camera, X } from "lucide-react";
  * - continuo=true: se queda abierto y llama onCodigo por cada producto (modo caja).
  * - continuo=false: se cierra al leer el primer código (para formularios).
  * - children: si se pasa, la pantalla se divide: cámara arriba y ese contenido abajo (el carrito).
- * - ignorar: lista de códigos que no se suman hasta que salgan de la cámara (al reabrirla).
+ * - onCodigo puede devolver false (o una promesa con false) si el código no sirve: suena un tono de error.
  * - barra: contenido para la parte superior en modo dividido (el buscador por nombre o código).
  * Requiere HTTPS (o localhost) para que el navegador permita la cámara.
  */
@@ -24,20 +24,29 @@ function crearLector() {
   return new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 80, delayBetweenScanSuccess: 300 });
 }
 
-function pitido() {
+/** Pitido agudo y corto si se leyó bien; grave y largo si el código no sirve (error). */
+function pitido(error = false) {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     const ctx = pitido.ctx || (pitido.ctx = new Ctx());
     const o = ctx.createOscillator(), g = ctx.createGain();
-    o.frequency.value = 1650; o.type = "square";
+    const dur = error ? 0.3 : 0.12;
+    o.frequency.value = error ? 320 : 1650; o.type = "square";
     g.gain.setValueAtTime(0.08, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
-    o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.13);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur + 0.01);
   } catch { /* sin sonido */ }
-  try { navigator.vibrate?.(40); } catch { /* sin vibración */ }
+  try { navigator.vibrate?.(error ? [90, 60, 90] : 40); } catch { /* sin vibración */ }
 }
 
-export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar, resultado, ignorar, barra, children }) {
+/** Avisa al componente padre y suena según la respuesta (false = código no válido). */
+async function entregar(cb, codigo) {
+  let ok = true;
+  try { ok = (await cb?.(codigo)) !== false; } catch { ok = false; }
+  pitido(!ok);
+}
+
+export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar, resultado, barra, children }) {
   const video = useRef(null);
   const controles = useRef(null);
   const vistos = useRef(new Map());   // código → última vez que se vio en cámara
@@ -45,8 +54,6 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
   onCodigoRef.current = onCodigo;
   const onCerrarRef = useRef(onCerrar);
   onCerrarRef.current = onCerrar;
-  const ignorarRef = useRef(ignorar);
-  ignorarRef.current = ignorar;
   const [error, setError] = useState("");
   const [leyendoFoto, setLeyendoFoto] = useState(false);
 
@@ -54,8 +61,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
     if (!abierto) return;
     let cancelado = false;
     setError("");
-    // Los códigos indicados en "ignorar" no se vuelven a sumar mientras sigan frente a la cámara
-    vistos.current = new Map((ignorarRef.current || []).map((c) => [String(c), Date.now()]));
+    vistos.current = new Map();
     pitido.ctx?.resume?.();
 
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
@@ -76,8 +82,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
           const visto = vistos.current.get(codigo);
           vistos.current.set(codigo, ahora);
           if (visto && ahora - visto < 1200) return;
-          pitido();
-          onCodigoRef.current?.(codigo);
+          entregar(onCodigoRef.current, codigo);
           if (!continuo) { controles.current?.stop(); onCerrarRef.current?.(); }
         }
       )
@@ -102,8 +107,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
     const url = URL.createObjectURL(archivo);
     try {
       const res = await crearLector().decodeFromImageUrl(url);
-      pitido();
-      onCodigoRef.current?.(res.getText());
+      entregar(onCodigoRef.current, res.getText());
       if (!continuo) onCerrar?.();
     } catch {
       setError("No se encontró un código en la foto. Acércate más, con buena luz y el código recto.");
@@ -133,7 +137,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
           <button className="btn dark icon" onClick={onCerrar} aria-label="Cerrar escáner" style={{ flexShrink: 0 }}><X size={20} /></button>
         </div>
         {dividido && resultado && (
-          <div key={resultado.texto + resultado.n} className={"scan-pill" + (resultado.ok ? " ok" : "")}>{resultado.texto}</div>
+          <div key={resultado.texto + resultado.n} className={"scan-pill " + (resultado.tipo || "")}>{resultado.texto}</div>
         )}
       </div>
 
@@ -141,7 +145,7 @@ export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar,
         <div className="scan-panel">{children}</div>
       ) : (
         <div className="scan-bottom">
-          <div className={"scan-last" + (resultado?.ok ? " ok" : "")}>
+          <div className={"scan-last" + (resultado?.tipo === "ok" ? " ok" : "")}>
             {resultado ? resultado.texto : "Apunta al código de barras dentro del recuadro."}
           </div>
           <div className="row">

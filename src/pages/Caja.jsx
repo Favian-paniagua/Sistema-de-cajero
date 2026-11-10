@@ -43,8 +43,6 @@ export default function Caja({ carrito, setCarrito }) {
   const [escaneando, setEscaneando] = useState(false);
   const [ultimoEscaneo, setUltimoEscaneo] = useState(null);
   const [nuevoCodigo, setNuevoCodigo] = useState(null);
-  const volverAEscanear = useRef(false);                     // tras registrar un producto nuevo, se reabre la cámara
-  const [ignorar, setIgnorar] = useState([]);                // y no vuelve a sumar lo que ya está en el carrito mientras siga enfocado
   const [cobrando, setCobrando] = useState(false);
   const [resaltado, setResaltado] = useState(null);
   const input = useRef(null);
@@ -68,18 +66,25 @@ export default function Caja({ carrito, setCarrito }) {
     setTimeout(() => setResaltado(null), 500);
   }
 
+  /** Desde el buscador de la caja: si el código no existe, abre el formulario para registrarlo. */
   async function porCodigo(codigo) {
+    const p = await buscarPorCodigo(codigo);
+    if (p) { agregar(p); avisar("+1 " + p.nombre, 1200); }
+    else setNuevoCodigo(codigo);
+  }
+
+  /** Desde el escáner: si el código no existe, solo avisa en rojo y la cámara sigue abierta. */
+  async function porCodigoEscaner(codigo) {
     const p = await buscarPorCodigo(codigo);
     if (p) {
       agregar(p);
-      setUltimoEscaneo((u) => ({ ok: true, texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 }));
-      if (!escaneando) avisar("+1 " + p.nombre, 1200);
-    } else {
-      volverAEscanear.current = escaneando;
-      setEscaneando(false);
-      setNuevoCodigo(codigo);
+      setUltimoEscaneo((u) => ({ tipo: "ok", texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 }));
+      return true;
     }
+    setUltimoEscaneo((u) => ({ tipo: "error", texto: `Producto no registrado · ${codigo}`, n: (u?.n || 0) + 1 }));
+    return false;
   }
+
 
   const cambiarCantidad = (id, delta) =>
     setCarrito((c) => c.map((x) => (x.productoId === id ? { ...x, cantidad: x.cantidad + delta } : x)).filter((x) => x.cantidad > 0));
@@ -106,7 +111,7 @@ export default function Caja({ carrito, setCarrito }) {
       <div className="caja">
         <div className="card pad">
           <div className="scanbar">
-            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setIgnorar([]); setEscaneando(true); }}><ScanBarcode size={22} /> <span>Escanear</span></button>
+            <button className="btn primary big scan-btn" onClick={() => { setUltimoEscaneo(null); setEscaneando(true); }}><ScanBarcode size={22} /> <span>Escanear</span></button>
             <BuscadorProducto ref={input} productos={productos} onElegir={(p) => agregar(p)} onCodigo={porCodigo} />
           </div>
           <p className="sub" style={{ margin: "10px 2px 0" }}>Escanea con la cámara, escribe el código o usa un lector USB (escribe solo y presiona Enter).</p>
@@ -135,10 +140,10 @@ export default function Caja({ carrito, setCarrito }) {
       </div>
 
       {/* Escáner dividido: cámara arriba, carrito abajo (se puede sumar/restar sin cerrar la cámara) */}
-      <Escaner abierto={escaneando} continuo resultado={ultimoEscaneo} onCodigo={porCodigo} ignorar={ignorar} onCerrar={() => setEscaneando(false)}
+      <Escaner abierto={escaneando} continuo resultado={ultimoEscaneo} onCodigo={porCodigoEscaner} onCerrar={() => setEscaneando(false)}
         barra={<BuscadorProducto className="scan-search" alto={44} productos={productos} placeholder="Nombre o código del producto"
-          onElegir={(p) => { agregar(p); setUltimoEscaneo((u) => ({ ok: true, texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 })); }}
-          onCodigo={porCodigo} />}>
+          onElegir={(p) => { agregar(p); setUltimoEscaneo((u) => ({ tipo: "ok", texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 })); }}
+          onCodigo={porCodigoEscaner} />}>
         <div className="sp-list">
           <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad}
             vacio="Apunta la cámara al código de barras. Los productos aparecerán aquí." />
@@ -157,8 +162,7 @@ export default function Caja({ carrito, setCarrito }) {
           nota="Este código no está registrado. Complétalo una vez y quedará guardado."
           onCerrar={() => {
             setNuevoCodigo(null);
-            if (volverAEscanear.current) { volverAEscanear.current = false; setEscaneando(true); }
-          }} onGuardado={(p) => { agregar(p); setIgnorar([...carrito.map((i) => i.codigo), p.codigo]); avisar("Guardado y agregado: " + p.nombre); }} />
+          }} onGuardado={(p) => { agregar(p); avisar("Guardado y agregado: " + p.nombre); }} />
       )}
       {cobrando && <Cobro total={totales.total} unidades={totales.unidades} onCerrar={() => setCobrando(false)} onConfirmar={confirmarVenta} />}
     </section>
