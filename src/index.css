@@ -244,8 +244,9 @@ nav.bottom a.active{color:var(--accent)}
 
 /* CATEGORÍAS */
 .chip-n{font-weight:500;opacity:.6;margin-left:2px}
-.cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.cat-chips .chip{padding:6px 12px}
+.cat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+@media(min-width:420px){.cat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.cat-grid .chip{padding:9px 8px;white-space:normal;line-height:1.2;text-align:center}
 .grupo-cat + .grupo-cat{margin-top:8px}
 .cat-titulo{margin:14px 4px 2px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);display:flex;gap:6px;align-items:center}
 .cat-titulo span{font-weight:500;color:var(--muted)}

@@ -1,5 +1,6 @@
 import { db } from "../db/database";
 import { METODOS } from "./estadisticas";
+import { categoriaDe } from "./categorias";
 
 /**
  * Genera un archivo Excel (.xlsx) con tres hojas:
@@ -94,8 +95,8 @@ export async function exportarExcel() {
     cambio: v.cambio || 0,
   })), { totales: ["unidades", "total", "costo", "ganancia"] });
 
-  const catPorId = new Map(productos.map((p) => [p.id, p.categoria]));
-  const categoriaDe = (x) => x.categoria || catPorId.get(x.productoId) || "Sin categoría";
+  const catPorId = new Map(productos.map((p) => [p.id, p]));
+  const categoriaItem = (x) => (x.categoria ? categoriaDe(x) : categoriaDe(catPorId.get(x.productoId)));
   const detalle = [];
   ventas.forEach((v, i) => (v.items || []).forEach((x) => detalle.push({
     n: i + 1,
@@ -104,7 +105,7 @@ export async function exportarExcel() {
     metodo: metodo(v.metodo),
     codigo: String(x.codigo),
     producto: x.nombre,
-    categoria: categoriaDe(x),
+    categoria: categoriaItem(x),
     cantidad: x.cantidad,
     precio: x.precio,
     subtotal: x.precio * x.cantidad,
@@ -134,7 +135,7 @@ export async function exportarExcel() {
   ], productos.map((p) => ({
     codigo: String(p.codigo),
     nombre: p.nombre,
-    categoria: p.categoria || "Sin categoría",
+    categoria: categoriaDe(p),
     precio: p.precio || 0,
     costo: p.costo || 0,
     stock: p.stock || 0,

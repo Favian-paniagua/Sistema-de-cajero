@@ -1,14 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
-import { SIN_CATEGORIA } from "../db/repositorio";
+import { CATEGORIAS, categoriaDe } from "../lib/categorias";
 import { dinero } from "../lib/formato";
 import { useAvisos } from "../components/Avisos";
 import ProductoForm from "../components/ProductoForm";
 import { Package, PackagePlus, TriangleAlert } from "lucide-react";
 import { EsqueletoFilasProductos, Sk } from "../components/Esqueletos";
 
-const catDe = (p) => p.categoria || SIN_CATEGORIA;
 
 /** Inventario: lista por categoría, búsqueda, alta y edición de productos. */
 export default function Productos() {
@@ -18,26 +17,22 @@ export default function Productos() {
   const [categoria, setCategoria] = useState("todas");
   const [editando, setEditando] = useState(null);   // {} = nuevo, {id…} = editar
 
-  // Categorías con su cantidad de productos ("Sin categoría" al final)
-  const categorias = useMemo(() => {
-    const m = new Map();
-    (productos || []).forEach((p) => m.set(catDe(p), (m.get(catDe(p)) || 0) + 1));
-    return [...m.entries()].sort(([a], [b]) => (a === SIN_CATEGORIA) - (b === SIN_CATEGORIA) || a.localeCompare(b, "es"));
-  }, [productos]);
-  const catFiltro = categoria !== "todas" && !categorias.some(([c]) => c === categoria) ? "todas" : categoria;
+  // Todas las categorías fijas, con su cantidad de productos
+  const categorias = useMemo(() => CATEGORIAS.map((c) => [c, (productos || []).filter((p) => categoriaDe(p) === c).length]), [productos]);
+  const catFiltro = categoria;
 
   const lista = (productos || []).filter((p) => {
     const t = q.trim().toLowerCase();
     const okTexto = !t || p.nombre.toLowerCase().includes(t) || String(p.codigo).includes(t);
-    return okTexto && (catFiltro === "todas" || catDe(p) === catFiltro);
+    return okTexto && (catFiltro === "todas" || categoriaDe(p) === catFiltro);
   });
 
   // Agrupados por categoría cuando se ven todas
   const grupos = useMemo(() => {
     if (catFiltro !== "todas") return [[catFiltro, lista]];
-    return categorias.map(([c]) => [c, lista.filter((p) => catDe(p) === c)]).filter(([, ps]) => ps.length);
+    return categorias.map(([c]) => [c, lista.filter((p) => categoriaDe(p) === c)]).filter(([, ps]) => ps.length);
   }, [catFiltro, categorias, lista]);
-  const mostrarTitulos = catFiltro === "todas" && (categorias.length > 1 || categorias[0]?.[0] !== SIN_CATEGORIA);
+  const mostrarTitulos = catFiltro === "todas";
 
   const fila = (p) => {
     const bajo = (p.stock || 0) <= (p.minimo || 0);
@@ -60,7 +55,7 @@ export default function Productos() {
         <button className="btn primary" onClick={() => setEditando({})}><PackagePlus size={18} /> Nuevo producto</button>
       </div>
 
-      {categorias.length > 0 && (
+      {productos && (
         <div className="chips mt" role="tablist" aria-label="Categorías">
           <button role="tab" aria-selected={catFiltro === "todas"} className={"chip" + (catFiltro === "todas" ? " on" : "")} onClick={() => setCategoria("todas")}>
             Todas <span className="chip-n">{productos.length}</span>

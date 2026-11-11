@@ -1,5 +1,6 @@
 import { db } from "./database";
 import { r2, claveDia } from "../lib/formato";
+import { categoriaDe } from "../lib/categorias";
 
 /**
  * Todas las operaciones de datos pasan por aquí.
@@ -15,27 +16,11 @@ export async function buscarPorCodigo(codigo) {
   return (await db.productos.where("codigo").equals(c).first()) ?? null;
 }
 
-export const SIN_CATEGORIA = "Sin categoría";
-
-/** Lista de categorías ya usadas, en orden alfabético. */
-export async function listarCategorias() {
-  const cats = await db.productos.orderBy("categoria").uniqueKeys();
-  return cats.filter((c) => c && c !== SIN_CATEGORIA).sort((a, b) => a.localeCompare(b, "es"));
-}
-
-/** Limpia el nombre de la categoría y reutiliza una existente si solo cambia mayúsculas/minúsculas. */
-async function normalizarCategoria(texto) {
-  const t = String(texto ?? "").trim().replace(/\s+/g, " ").slice(0, 30);
-  if (!t) return SIN_CATEGORIA;
-  const existente = (await listarCategorias()).find((c) => c.toLocaleLowerCase("es") === t.toLocaleLowerCase("es"));
-  return existente || t.charAt(0).toLocaleUpperCase("es") + t.slice(1);
-}
-
 export async function guardarProducto(datos, id) {
   const p = {
     codigo: String(datos.codigo).trim(),
     nombre: String(datos.nombre).trim(),
-    categoria: await normalizarCategoria(datos.categoria),
+    categoria: categoriaDe(datos),          // solo categorías de la lista fija
     precio: r2(datos.precio),
     costo: r2(datos.costo),
     stock: Math.round(Number(datos.stock) || 0),
@@ -77,7 +62,7 @@ export async function registrarVenta(carrito, metodo, recibido) {
     recibido: r2(recibido ?? total),
     cambio: r2(Math.max(0, (recibido ?? total) - total)),
     items: carrito.map((i) => ({
-      productoId: i.productoId, codigo: i.codigo, nombre: i.nombre, categoria: i.categoria || SIN_CATEGORIA,
+      productoId: i.productoId, codigo: i.codigo, nombre: i.nombre, categoria: categoriaDe(i),
       precio: r2(i.precio), costo: r2(i.costo), cantidad: i.cantidad,
     })),
   };
