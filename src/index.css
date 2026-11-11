@@ -329,5 +329,7 @@ select.f.select option{color:var(--text)}
 .elegir-modo{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:8px}
 .modo-op{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 6px;min-height:40px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);font-weight:600;font-size:13px;cursor:pointer;text-align:center;line-height:1.15}
 .modo-op svg{flex-shrink:0}
+.modo-op span{text-align:left;white-space:nowrap}
+@media(max-width:374px){.modo-op{font-size:12px;gap:4px;padding:8px 4px}}
 .modo-op.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .modo-o{align-self:center;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--text-2);font-weight:700;font-size:13px}
