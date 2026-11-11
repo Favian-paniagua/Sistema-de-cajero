@@ -87,17 +87,19 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
       <Modal abierto arriba onCerrar={onCerrar} titulo={titulo || (editando ? "Editar producto" : "Nuevo producto")} nota={nota}>
         <form onSubmit={guardar} noValidate className="mt2">
           <div className="foto-prod">
-            <button type="button" className={"foto-caja" + (vistaPrevia ? " con-foto" : "")} onClick={() => archivo.current?.click()}
-              aria-label={vistaPrevia ? "Cambiar imagen del producto" : "Agregar imagen del producto"}>
-              {cargandoImg ? <span className="spin" /> : vistaPrevia ? <img src={vistaPrevia} alt="" /> : <ImagePlus size={26} strokeWidth={1.8} />}
-            </button>
-            {vistaPrevia && (
-              <button type="button" className="foto-quitar" aria-label="Quitar imagen" onClick={() => setF((x) => ({ ...x, imagen: null }))}><X size={14} strokeWidth={2.5} /></button>
-            )}
-            <span className="sub">{vistaPrevia ? "Toca la imagen para cambiarla" : "Agregar imagen (opcional)"}</span>
+            <div className="foto-marco">
+              <button type="button" className={"foto-caja" + (vistaPrevia ? " con-foto" : "")} onClick={() => archivo.current?.click()}
+                aria-label={vistaPrevia ? "Cambiar imagen del producto" : "Agregar imagen del producto"}>
+                {cargandoImg ? <span className="spin" /> : vistaPrevia ? <img src={vistaPrevia} alt="" /> : <ImagePlus size={26} strokeWidth={1.8} />}
+              </button>
+              {vistaPrevia && (
+                <button type="button" className="foto-quitar" aria-label="Quitar imagen" onClick={() => setF((x) => ({ ...x, imagen: null }))}><X size={14} strokeWidth={2.5} /></button>
+              )}
+            </div>
+            <span className="sub">{vistaPrevia ? "Toca la imagen para cambiarla" : "Agregar imagen"}</span>
             <input ref={archivo} className="hidden-input" type="file" accept="image/*" onChange={elegirImagen} />
           </div>
-          <label className="l mt" htmlFor="f_codigo">Código de barras</label>
+          <label className="l" htmlFor="f_codigo">Código de barras</label>
           <div className="row">
             <input className="f num" id="f_codigo" value={f.codigo} onChange={cambiar("codigo")} placeholder="Ej. 7771234567890" />
             <button type="button" className="btn icon" onClick={() => setEscaneando(true)} aria-label="Escanear código" style={{ minHeight: 46, minWidth: 46 }}><ScanBarcode size={20} /></button>
