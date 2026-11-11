@@ -241,3 +241,11 @@ nav.bottom a.active{color:var(--accent)}
 /* aparece tras un instante: si los datos llegan rápido, no se ve parpadear */
 .esq{animation:esq-aparece .25s ease .18s both}
 @keyframes esq-aparece{from{opacity:0}}
+
+/* CATEGORÍAS */
+.chip-n{font-weight:500;opacity:.6;margin-left:2px}
+.cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cat-chips .chip{padding:6px 12px}
+.grupo-cat + .grupo-cat{margin-top:8px}
+.cat-titulo{margin:14px 4px 2px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);display:flex;gap:6px;align-items:center}
+.cat-titulo span{font-weight:500;color:var(--muted)}

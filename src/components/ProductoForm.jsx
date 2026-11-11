@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import Modal from "./Modal";
 import Escaner from "./EscanerLazy";
 import { useAvisos } from "./Avisos";
 import { aNumero } from "../lib/formato";
-import { guardarProducto, eliminarProducto } from "../db/repositorio";
+import { guardarProducto, eliminarProducto, listarCategorias, SIN_CATEGORIA } from "../db/repositorio";
 import { ScanBarcode } from "lucide-react";
 
 const aTexto = (n) => (n == null || n === "" ? "" : String(n).replace(".", ","));
@@ -18,6 +19,7 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
   const [f, setF] = useState({
     codigo: producto?.codigo ?? "",
     nombre: producto?.nombre ?? "",
+    categoria: producto?.categoria && producto.categoria !== SIN_CATEGORIA ? producto.categoria : "",
     precio: aTexto(producto?.precio),
     costo: aTexto(producto?.costo),
     stock: producto?.stock ?? "",
@@ -27,6 +29,8 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
   const [guardando, setGuardando] = useState(false);
   const [escaneando, setEscaneando] = useState(false);
   const cambiar = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const categorias = useLiveQuery(listarCategorias, [], []);
+  const catActual = f.categoria.trim().toLocaleLowerCase("es");
 
   async function guardar(e) {
     e.preventDefault();
@@ -66,6 +70,17 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
           </div>
           <label className="l mt" htmlFor="f_nombre">Nombre</label>
           <input className="f" id="f_nombre" value={f.nombre} onChange={cambiar("nombre")} placeholder="Ej. Coca-Cola 2L" autoFocus={!!f.codigo && !editando} />
+          <label className="l mt" htmlFor="f_cat">Categoría</label>
+          <input className="f" id="f_cat" value={f.categoria} onChange={cambiar("categoria")} maxLength={30}
+            placeholder={categorias.length ? "Elige una o escribe una nueva" : "Ej. Bebidas, Lácteos, Abarrotes"} autoComplete="off" />
+          {categorias.length > 0 && (
+            <div className="cat-chips" role="group" aria-label="Categorías existentes">
+              {categorias.map((c) => (
+                <button type="button" key={c} className={"chip" + (c.toLocaleLowerCase("es") === catActual ? " on" : "")}
+                  onClick={() => setF({ ...f, categoria: c.toLocaleLowerCase("es") === catActual ? "" : c })}>{c}</button>
+              ))}
+            </div>
+          )}
           <div className="grid2 mt">
             <div><label className="l" htmlFor="f_precio">Precio de venta (Bs)</label><input className="f num" id="f_precio" inputMode="decimal" value={f.precio} onChange={cambiar("precio")} placeholder="0,00" /></div>
             <div><label className="l" htmlFor="f_costo">Costo (Bs)</label><input className="f num" id="f_costo" inputMode="decimal" value={f.costo} onChange={cambiar("costo")} placeholder="0,00" /></div>

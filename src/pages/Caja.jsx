@@ -100,7 +100,7 @@ export default function Caja({ carrito, setCarrito }) {
     setCarrito((c) => {
       const i = c.findIndex((x) => x.productoId === p.id);
       if (i >= 0) return c.map((x, k) => (k === i ? { ...x, cantidad: x.cantidad + cantidad } : x));
-      return [{ productoId: p.id, codigo: p.codigo, nombre: p.nombre, precio: p.precio, costo: p.costo || 0, cantidad }, ...c];
+      return [{ productoId: p.id, codigo: p.codigo, nombre: p.nombre, categoria: p.categoria, precio: p.precio, costo: p.costo || 0, cantidad }, ...c];
     });
     setResaltado(p.id);
     setTimeout(() => setResaltado(null), 500);

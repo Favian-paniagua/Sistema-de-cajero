@@ -5,7 +5,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 ## Funciones
 
 - **Caja**: primero la **apertura de caja** (con cuánto efectivo se empieza). Luego, un botón grande para escanear: abre la cámara en vivo con un buscador por nombre o código arriba y el carrito abajo (sumar, restar o quitar); los códigos no registrados muestran un aviso rojo. Se cobra en efectivo/QR/tarjeta con cálculo de cambio.
-- **Productos**: inventario con stock, costo y alerta de stock mínimo. Importación masiva pegando desde Excel. Si escaneas un código nuevo, te pide los datos y lo guarda.
+- **Productos**: inventario agrupado por **categoría** (con filtro por categoría y búsqueda), stock, costo y alerta de stock mínimo. Al registrar o editar un producto se elige una categoría existente o se escribe una nueva.
 - **Dashboard**: ventas, ganancia estimada, número de ventas y ticket promedio (hoy, 7 días, 30 días, este mes), gráfico por hora o por día, productos más vendidos, formas de pago, stock bajo, últimas ventas (con opción de anular).
 - **Cierre**:
   - **Cerrar caja**: cierra el turno abierto y descarga un reporte PDF (efectivo inicial y efectivo esperado, total vendido, ganancia, ventas por forma de pago, cuánto se vendió de cada producto y el detalle de cada venta). Después hay que volver a abrir la caja para vender. También se puede volver a descargar el reporte del último cierre.
@@ -96,7 +96,6 @@ src/
     EscanerLazy.jsx     carga el escáner solo cuando se usa
     Cobro.jsx           ventana de cobro y cambio
     ProductoForm.jsx    crear/editar producto
-    ImportarLista.jsx   carga masiva de productos
     Modal.jsx           ventana emergente
     Avisos.jsx          mensajes y confirmaciones
   pages/

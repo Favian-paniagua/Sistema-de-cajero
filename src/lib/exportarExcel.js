@@ -94,6 +94,8 @@ export async function exportarExcel() {
     cambio: v.cambio || 0,
   })), { totales: ["unidades", "total", "costo", "ganancia"] });
 
+  const catPorId = new Map(productos.map((p) => [p.id, p.categoria]));
+  const categoriaDe = (x) => x.categoria || catPorId.get(x.productoId) || "Sin categoría";
   const detalle = [];
   ventas.forEach((v, i) => (v.items || []).forEach((x) => detalle.push({
     n: i + 1,
@@ -102,6 +104,7 @@ export async function exportarExcel() {
     metodo: metodo(v.metodo),
     codigo: String(x.codigo),
     producto: x.nombre,
+    categoria: categoriaDe(x),
     cantidad: x.cantidad,
     precio: x.precio,
     subtotal: x.precio * x.cantidad,
@@ -113,6 +116,7 @@ export async function exportarExcel() {
     { titulo: "Forma de pago", clave: "metodo", ancho: 14 },
     { titulo: "Código", clave: "codigo", ancho: 16, formato: "@" },
     { titulo: "Producto", clave: "producto", ancho: 32 },
+    { titulo: "Categoría", clave: "categoria", ancho: 18 },
     { titulo: "Cantidad", clave: "cantidad", centrar: true, ancho: 10 },
     { titulo: "Precio unitario", clave: "precio", ancho: 15, formato: BS },
     { titulo: "Subtotal", clave: "subtotal", ancho: 13, formato: BS },
@@ -121,6 +125,7 @@ export async function exportarExcel() {
   hoja(libro, "Productos", [
     { titulo: "Código", clave: "codigo", ancho: 16, formato: "@" },
     { titulo: "Producto", clave: "nombre", ancho: 32 },
+    { titulo: "Categoría", clave: "categoria", ancho: 18 },
     { titulo: "Precio de venta", clave: "precio", ancho: 15, formato: BS },
     { titulo: "Costo", clave: "costo", ancho: 12, formato: BS },
     { titulo: "Stock", clave: "stock", centrar: true, ancho: 9 },
@@ -129,6 +134,7 @@ export async function exportarExcel() {
   ], productos.map((p) => ({
     codigo: String(p.codigo),
     nombre: p.nombre,
+    categoria: p.categoria || "Sin categoría",
     precio: p.precio || 0,
     costo: p.costo || 0,
     stock: p.stock || 0,

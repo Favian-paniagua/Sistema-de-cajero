@@ -15,10 +15,27 @@ export async function buscarPorCodigo(codigo) {
   return (await db.productos.where("codigo").equals(c).first()) ?? null;
 }
 
+export const SIN_CATEGORIA = "Sin categoría";
+
+/** Lista de categorías ya usadas, en orden alfabético. */
+export async function listarCategorias() {
+  const cats = await db.productos.orderBy("categoria").uniqueKeys();
+  return cats.filter((c) => c && c !== SIN_CATEGORIA).sort((a, b) => a.localeCompare(b, "es"));
+}
+
+/** Limpia el nombre de la categoría y reutiliza una existente si solo cambia mayúsculas/minúsculas. */
+async function normalizarCategoria(texto) {
+  const t = String(texto ?? "").trim().replace(/\s+/g, " ").slice(0, 30);
+  if (!t) return SIN_CATEGORIA;
+  const existente = (await listarCategorias()).find((c) => c.toLocaleLowerCase("es") === t.toLocaleLowerCase("es"));
+  return existente || t.charAt(0).toLocaleUpperCase("es") + t.slice(1);
+}
+
 export async function guardarProducto(datos, id) {
   const p = {
     codigo: String(datos.codigo).trim(),
     nombre: String(datos.nombre).trim(),
+    categoria: await normalizarCategoria(datos.categoria),
     precio: r2(datos.precio),
     costo: r2(datos.costo),
     stock: Math.round(Number(datos.stock) || 0),
@@ -38,23 +55,6 @@ export async function guardarProducto(datos, id) {
 }
 
 export const eliminarProducto = (id) => db.productos.delete(id);
-
-/** Importa filas {codigo, nombre, precio, costo, stock}. Si el código existe, lo actualiza. */
-export async function importarProductos(filas) {
-  let creados = 0, actualizados = 0;
-  await db.transaction("rw", db.productos, async () => {
-    for (const f of filas) {
-      const existente = await db.productos.where("codigo").equals(f.codigo).first();
-      const datos = {
-        codigo: f.codigo, nombre: f.nombre, precio: r2(f.precio), costo: r2(f.costo),
-        stock: Math.round(f.stock || 0), minimo: existente?.minimo ?? 5, actualizado: Date.now(),
-      };
-      if (existente) { await db.productos.update(existente.id, datos); actualizados++; }
-      else { await db.productos.add(datos); creados++; }
-    }
-  });
-  return { creados, actualizados };
-}
 
 /* ---------- Ventas ---------- */
 
@@ -77,7 +77,7 @@ export async function registrarVenta(carrito, metodo, recibido) {
     recibido: r2(recibido ?? total),
     cambio: r2(Math.max(0, (recibido ?? total) - total)),
     items: carrito.map((i) => ({
-      productoId: i.productoId, codigo: i.codigo, nombre: i.nombre,
+      productoId: i.productoId, codigo: i.codigo, nombre: i.nombre, categoria: i.categoria || SIN_CATEGORIA,
       precio: r2(i.precio), costo: r2(i.costo), cantidad: i.cantidad,
     })),
   };
