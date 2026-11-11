@@ -9,7 +9,7 @@ import { BILLETES, MONEDAS, efectivoEsperado, totalConteo, diferencia } from "..
 import { METODOS } from "../lib/estadisticas";
 import { useAvisos } from "../components/Avisos";
 import { EsqueletoTurno, Sk } from "../components/Esqueletos";
-import { ArrowDown, ArrowUp, ChevronLeft, CircleCheck, FileDown, FileSpreadsheet, LockKeyhole, Wallet } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, CircleCheck, Coins, FileDown, FileSpreadsheet, LockKeyhole, Pencil, Wallet } from "lucide-react";
 
 function descargar(nombre, contenido, tipo) {
   const blob = contenido instanceof Blob ? contenido : new Blob([contenido], { type: tipo });
@@ -41,6 +41,12 @@ function ArqueoEfectivo({ inicial, ventasEfectivo, esperado, onVolver, onConfirm
   const [conteo, setConteo] = useState({});
   const [observacion, setObservacion] = useState("");
 
+  // Solo cuenta una forma: al cambiar, se borra lo escrito en la otra
+  const cambiarModo = (m) => {
+    if (m === modo) return;
+    setModo(m); setTotal(""); setConteo({});
+  };
+
   const contado = modo === "detalle" ? totalConteo(conteo) : aNumero(total);
   const ingresado = modo === "detalle" ? Object.values(conteo).some((c) => c !== "" && c != null) : total.trim() !== "";
   const dif = ingresado ? diferencia(contado, esperado) : null;
@@ -69,9 +75,15 @@ function ArqueoEfectivo({ inicial, ventasEfectivo, esperado, onVolver, onConfirm
       </div>
 
       <h3 className="arqueo-titulo">Cuenta el efectivo</h3>
-      <div className="seg seg2" role="tablist">
-        <button role="tab" aria-selected={modo === "total"} className={modo === "total" ? "on" : ""} onClick={() => setModo("total")}>Escribir total</button>
-        <button role="tab" aria-selected={modo === "detalle"} className={modo === "detalle" ? "on" : ""} onClick={() => setModo("detalle")}>Billetes y monedas</button>
+      <p className="sub" style={{ margin: "-4px 0 10px" }}>Elige <b>una</b> de las dos formas de registrar lo que contaste:</p>
+      <div className="elegir-modo" role="radiogroup" aria-label="Forma de contar el efectivo">
+        <button role="radio" aria-checked={modo === "total"} className={"modo-op" + (modo === "total" ? " on" : "")} onClick={() => cambiarModo("total")}>
+          <Pencil size={18} /><span>Escribir total</span>
+        </button>
+        <span className="modo-o" aria-hidden="true">o</span>
+        <button role="radio" aria-checked={modo === "detalle"} className={"modo-op" + (modo === "detalle" ? " on" : "")} onClick={() => cambiarModo("detalle")}>
+          <Coins size={18} /><span>Billetes y monedas</span>
+        </button>
       </div>
 
       {modo === "total" ? (

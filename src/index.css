@@ -321,3 +321,9 @@ select.f.select option{color:var(--text)}
 .resultado-ico.dif-cuadra,.resultado-ico.dif-sobrante,.resultado-ico.dif-faltante{padding:0}
 .resultado-cierre .obs{font-style:italic}
 .ultimo-cierre{background:var(--surface-2);border-radius:14px;padding:14px 16px;margin-top:12px}
+
+/* Elegir una forma de contar: [Escribir total]  o  [Billetes y monedas] */
+.elegir-modo{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:8px}
+.modo-op{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 8px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);font-weight:600;cursor:pointer;text-align:center;line-height:1.2}
+.modo-op.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.modo-o{align-self:center;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--text-2);font-weight:700;font-size:13px}
