@@ -75,14 +75,14 @@ function ArqueoEfectivo({ inicial, ventasEfectivo, esperado, onVolver, onConfirm
       </div>
 
       <h3 className="arqueo-titulo">Cuenta el efectivo</h3>
-      <p className="sub" style={{ margin: "-4px 0 10px" }}>Elige <b>una</b> de las dos formas de registrar lo que contaste:</p>
+      <p className="sub" style={{ margin: "-4px 0 8px" }}>Elige <b>una</b> de las dos formas de registrar:</p>
       <div className="elegir-modo" role="radiogroup" aria-label="Forma de contar el efectivo">
         <button role="radio" aria-checked={modo === "total"} className={"modo-op" + (modo === "total" ? " on" : "")} onClick={() => cambiarModo("total")}>
-          <Pencil size={18} /><span>Escribir total</span>
+          <Pencil size={15} /><span>Escribir total</span>
         </button>
         <span className="modo-o" aria-hidden="true">o</span>
         <button role="radio" aria-checked={modo === "detalle"} className={"modo-op" + (modo === "detalle" ? " on" : "")} onClick={() => cambiarModo("detalle")}>
-          <Coins size={18} /><span>Billetes y monedas</span>
+          <Coins size={15} /><span>Billetes y monedas</span>
         </button>
       </div>
 
