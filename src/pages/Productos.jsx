@@ -7,6 +7,7 @@ import { useAvisos } from "../components/Avisos";
 import ProductoForm from "../components/ProductoForm";
 import { Package, PackagePlus, TriangleAlert } from "lucide-react";
 import { EsqueletoFilasProductos, Sk } from "../components/Esqueletos";
+import MiniaturaProducto from "../components/MiniaturaProducto";
 
 
 /** Inventario: lista con filtro por categoría y búsqueda; alta y edición de productos. */
@@ -31,6 +32,7 @@ export default function Productos() {
     const bajo = (p.stock || 0) <= (p.minimo || 0);
     return (
       <li key={p.id} onClick={() => setEditando(p)}>
+        <MiniaturaProducto producto={p} />
         <div className="pi-nombre">{p.nombre}</div>
         <b className="num pi-precio">{dinero(p.precio)}</b>
         <div className="sub num">{p.costo ? `Costo ${dinero(p.costo)}` : ""}</div>

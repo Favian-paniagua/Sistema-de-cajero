@@ -46,6 +46,7 @@ export function EsqueletoCaja() {
 export function EsqueletoFilasProductos({ filas = 6 }) {
   return Array.from({ length: filas }, (_, i) => (
     <li key={i} className="esq" style={{ cursor: "default" }} aria-hidden="true">
+      <Sk w={48} h={48} r={12} className="sk-mini" />
       <Sk w={`${55 + ((i * 17) % 30)}%`} h={14} />
       <Sk w={64} h={16} className="pi-precio" />
       <Sk w="35%" h={11} />
