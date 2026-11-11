@@ -31,12 +31,10 @@ export default function Productos() {
     const bajo = (p.stock || 0) <= (p.minimo || 0);
     return (
       <li key={p.id} onClick={() => setEditando(p)}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 600 }}>{p.nombre}</div>
-          <div className="sub num">{p.codigo}{p.costo ? ` · costo ${dinero(p.costo)}` : ""}</div>
-        </div>
-        <span className={"badge" + (bajo ? " low" : "")}>{bajo && <TriangleAlert size={12} strokeWidth={2.4} />}{p.stock || 0} u</span>
-        <b className="num">{dinero(p.precio)}</b>
+        <div className="pi-nombre">{p.nombre}</div>
+        <b className="num pi-precio">{dinero(p.precio)}</b>
+        <div className="sub num">{p.costo ? `Costo ${dinero(p.costo)}` : ""}</div>
+        <span className={"badge pi-stock" + (bajo ? " low" : "")}>{bajo && <TriangleAlert size={12} strokeWidth={2.4} />}{p.stock || 0} u</span>
       </li>
     );
   };
