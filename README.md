@@ -5,7 +5,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 ## Funciones
 
 - **Caja**: primero la **apertura de caja** (con cuánto efectivo se empieza). Luego, un botón grande para escanear: abre la cámara en vivo con un buscador por nombre o código arriba y el carrito abajo (sumar, restar o quitar); los códigos no registrados muestran un aviso rojo. Se cobra en efectivo/QR/tarjeta con cálculo de cambio.
-- **Productos**: inventario con filtro por categoría (Todas, Lácteos, Limpieza, Bebidas, Cuidado personal, Snacks, Panadería, Alimentos, Otros) y búsqueda; stock, costo y alerta de stock mínimo. Al registrar o editar un producto, la categoría se elige de una lista desplegable (obligatoria). Las categorías se cambian en `src/lib/categorias.js`.
+- **Productos**: inventario con filtro por categoría (Todas, Lácteos, Limpieza, Bebidas, Cuidado personal, Snacks, Panadería, Alimentos, Otros) y búsqueda; stock, costo y alerta de stock mínimo. Al registrar o editar un producto se puede agregar una foto (se achica para ocupar poco) y la categoría se elige de una lista desplegable (obligatoria). Las categorías se cambian en `src/lib/categorias.js`.
 - **Dashboard**: ventas, ganancia estimada, número de ventas y ticket promedio (hoy, 7 días, 30 días, este mes), gráfico por hora o por día, productos más vendidos, formas de pago, stock bajo, últimas ventas (con opción de anular).
 - **Cierre**:
   - **Cerrar caja**: cierra el turno abierto y descarga un reporte PDF (efectivo inicial y efectivo esperado, total vendido, ganancia, ventas por forma de pago, cuánto se vendió de cada producto y el detalle de cada venta). Después hay que volver a abrir la caja para vender. También se puede volver a descargar el reporte del último cierre.
@@ -89,6 +89,8 @@ src/
   lib/
     formato.js          formato de dinero (Bs) y fechas
     categorias.js       lista fija de categorías de productos
+    imagen.js           achica las fotos de productos antes de guardarlas
+    bloquearScroll.js   congela la página de fondo mientras hay una ventana abierta
     estadisticas.js     cálculos del dashboard
     exportarExcel.js    archivo Excel de ventas e inventario
     reporteCierre.js    resumen y PDF del cierre de caja

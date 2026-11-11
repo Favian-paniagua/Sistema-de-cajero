@@ -161,10 +161,11 @@ nav.bottom a.active{color:var(--accent)}
 @media(max-width:719px){nav.tabs{display:none}}
 
 /* MODAL */
-.ov{position:fixed;inset:0;z-index:50;background:rgba(10,10,10,.45);display:none;align-items:flex-end;justify-content:center;padding:0}
+.ov{position:fixed;inset:0;z-index:50;overscroll-behavior:contain;touch-action:none;background:rgba(10,10,10,.45);display:none;align-items:flex-end;justify-content:center;padding:0}
 .ov.on{display:flex;animation:fade .15s ease}
+.ov .modal{touch-action:pan-y}
 @media(min-width:720px){.ov{align-items:center;padding:20px}}
-.modal{background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:92vh;overflow:auto;animation:up .2s cubic-bezier(.2,.8,.2,1)}
+.modal{background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:92vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;animation:up .2s cubic-bezier(.2,.8,.2,1)}
 @media(min-width:720px){.modal{border-radius:20px}}
 .modal h3{margin:0 0 4px;font-size:18px}
 .modal .acts{display:flex;gap:10px;margin-top:18px}
@@ -250,3 +251,11 @@ nav.bottom a.active{color:var(--accent)}
 select.f.select{appearance:none;-webkit-appearance:none;padding-right:40px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a8983' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
 select.f.select.vacio{color:var(--muted)}
 select.f.select option{color:var(--text)}
+
+/* Imagen del producto en el formulario */
+.foto-prod{position:relative;display:flex;align-items:center;gap:12px}
+.foto-caja{width:72px;height:72px;flex-shrink:0;border-radius:14px;border:1.5px dashed var(--border);background:var(--surface-2);color:var(--muted);display:grid;place-items:center;cursor:pointer;overflow:hidden;padding:0}
+.foto-caja:hover{border-color:var(--accent);color:var(--accent)}
+.foto-caja.con-foto{border-style:solid}
+.foto-caja img{width:100%;height:100%;object-fit:cover;display:block}
+.foto-quitar{position:absolute;left:58px;top:-6px;width:24px;height:24px;border-radius:50%;border:2px solid var(--surface);background:var(--text);color:var(--bg);display:grid;place-items:center;cursor:pointer;padding:0}

@@ -6,7 +6,7 @@ import Dexie from "dexie";
  * incluso sin internet. (Más adelante se sincronizará con un backend.)
  *
  * Tablas:
- *  - productos: { id, codigo, nombre, categoria, precio, costo, stock, minimo, actualizado }
+ *  - productos: { id, codigo, nombre, categoria, imagen (Blob), precio, costo, stock, minimo, actualizado }
  *  - ventas:    { id, ts, dia, hora, metodo, total, costoTotal, unidades, recibido, cambio, items[] }
  *  - aperturas: { id, ts, dia, efectivoInicial, cerradaTs, cierreId }   (un registro por cada apertura de caja)
  *  - cierres:   { id, ts, dia, aperturaId, aperturaTs, efectivoInicial, total, costo, ganancia, ventas, unidades, porMetodo }

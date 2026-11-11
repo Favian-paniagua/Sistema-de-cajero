@@ -1,7 +1,15 @@
 import { useEffect } from "react";
+import { bloquearScroll, desbloquearScroll } from "../lib/bloquearScroll";
 
 /** Ventana emergente: hoja inferior en celular, centrada en computadora. Con arriba=true se abre pegada arriba. */
 export default function Modal({ abierto, onCerrar, titulo, nota, arriba = false, children }) {
+  // Mientras está abierta, la página de atrás no se desplaza
+  useEffect(() => {
+    if (!abierto) return;
+    bloquearScroll();
+    return desbloquearScroll;
+  }, [abierto]);
+
   useEffect(() => {
     if (!abierto) return;
     const onKey = (e) => e.key === "Escape" && onCerrar?.();

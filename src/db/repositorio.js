@@ -21,6 +21,7 @@ export async function guardarProducto(datos, id) {
     codigo: String(datos.codigo).trim(),
     nombre: String(datos.nombre).trim(),
     categoria: categoriaDe(datos),          // solo categorías de la lista fija
+    imagen: datos.imagen instanceof Blob ? datos.imagen : null,   // foto del producto (opcional)
     precio: r2(datos.precio),
     costo: r2(datos.costo),
     stock: Math.round(Number(datos.stock) || 0),
