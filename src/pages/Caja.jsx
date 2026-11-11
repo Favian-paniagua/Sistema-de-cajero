@@ -7,10 +7,10 @@ import { useAvisos } from "../components/Avisos";
 import Escaner from "../components/EscanerLazy";
 import Cobro from "../components/Cobro";
 import BuscadorProducto from "../components/BuscadorProducto";
-import { LockKeyholeOpen, Minus, Plus, ScanBarcode, ShoppingCart, X } from "lucide-react";
+import { LockKeyholeOpen, Minus, Plus, ScanBarcode, ShoppingCart } from "lucide-react";
 import { EsqueletoCaja } from "../components/Esqueletos";
 
-/** Lista del carrito con botones para sumar, restar o quitar (se muestra dentro del escáner). */
+/** Lista del carrito con botones para sumar o restar; al restar con 1 unidad se quita (se muestra dentro del escáner). */
 function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
   if (!carrito.length) {
     return <ul className="cart-list"><li style={{ display: "block", border: 0 }}><div className="empty"><div className="ico"><ShoppingCart size={34} strokeWidth={1.5} /></div>{vacio}</div></li></ul>;
@@ -19,9 +19,9 @@ function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
     <ul className="cart-list">
       {carrito.map((i) => (
         <li key={i.productoId} className={i.productoId === resaltado ? "flash" : ""}>
-          <div><div className="ci-name">{i.nombre}</div><div className="ci-meta num">{dinero(i.precio)} c/u · {i.codigo}</div></div>
+          <div className="ci-name">{i.nombre}</div>
           <div className="ci-sub num">{dinero(i.precio * i.cantidad)}</div>
-          <div className="row"><button className="btn ghost icon danger" aria-label={"Quitar " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -i.cantidad)}><X size={18} /></button></div>
+          <div className="ci-meta num">{dinero(i.precio)} c/u</div>
           <div className="qty">
             <button aria-label={"Menos " + i.nombre} onClick={() => cambiarCantidad(i.productoId, -1)}><Minus size={16} /></button>
             <span className="num">{i.cantidad}</span>
