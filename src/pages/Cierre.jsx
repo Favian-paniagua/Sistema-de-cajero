@@ -121,7 +121,7 @@ function ArqueoEfectivo({ inicial, ventasEfectivo, esperado, onVolver, onConfirm
         </div>
       )}
 
-      <button className="btn primary big mt2" style={{ width: "100%" }} disabled={!dif || cerrando}
+      <button className="btn rojo big mt2" style={{ width: "100%" }} disabled={!dif || cerrando}
         onClick={() => onConfirmar({
           efectivoContado: contado, diferencia: dif.monto, tipoDiferencia: dif.tipo,
           observacion: observacion.trim(), conteo: modo === "detalle" ? conteo : null,
@@ -244,7 +244,7 @@ export default function Cierre() {
             <li key={id}><i style={{ background: m.color }} />{m.nombre}<span className="num">{dinero(r.porMetodo[id]?.total || 0)}</span></li>
           ))}
         </ul>
-        <button className="btn primary mt2" onClick={() => setPaso("conteo")}><Wallet size={18} /> Cerrar caja</button>
+        <button className="btn rojo mt2" onClick={() => setPaso("conteo")}><Wallet size={18} /> Cerrar caja</button>
       </>
     );
   } else {
