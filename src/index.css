@@ -80,12 +80,12 @@ label.l{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin:
 .resumen-turno b{font-size:18px}
 .scanbar .search{position:relative;flex:1}
 .sugg{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:15;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:none}
-.sugg button{display:flex;width:100%;justify-content:space-between;gap:12px;padding:11px 14px;border:0;background:none;text-align:left;cursor:pointer;border-bottom:1px solid var(--border)}
+.sugg button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px 8px 10px;border:0;background:none;text-align:left;cursor:pointer;border-bottom:1px solid var(--border)}
 .sugg button:last-child{border-bottom:0}
 .sugg button:hover,.sugg button.hl{background:var(--surface-2)}
 .scan-btn{flex-shrink:0}
 .cart-list{list-style:none;margin:0;padding:0}
-.cart-list li{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.cart-list li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--border)}
 .cart-list li:last-child{border-bottom:0}
 .ci-name{font-weight:600;line-height:1.3}
 .ci-meta{font-size:12px;color:var(--muted);align-self:center}
@@ -273,3 +273,8 @@ select.f.select option{color:var(--text)}
 .barra-productos .btn{flex-shrink:0;white-space:nowrap}
 .barra-productos .txt-corto{display:none}
 @media(max-width:379px){.barra-productos .txt-largo{display:none}.barra-productos .txt-corto{display:inline}}
+.sug-nombre{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sugg .mini-prod{border-radius:9px}
+.cart-list .mini-prod{border-radius:11px}
+.scan-search .sugg .mini-prod{background:rgba(255,255,255,.14);color:rgba(255,255,255,.85)}
+.scan-search .sugg .mini-prod.con-foto{background:#fff}

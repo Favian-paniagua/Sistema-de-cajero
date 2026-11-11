@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Bath, Cookie, Croissant, CupSoda, Milk, Package, Soup, SprayCan } from "lucide-react";
 import { categoriaDe } from "../lib/categorias";
 
@@ -14,21 +13,24 @@ const ICONOS = {
   "Otros": Package,
 };
 
+// URLs de fotos ya preparadas (por producto y versión), para no recrearlas en cada actualización
+const cache = new Map();
+function urlDe(producto) {
+  const img = producto?.imagen;
+  if (!(img instanceof Blob)) return null;
+  const clave = producto.id != null ? `${producto.id}:${producto.actualizado ?? ""}:${img.size}` : null;
+  if (clave && cache.has(clave)) return cache.get(clave);
+  const url = URL.createObjectURL(img);
+  if (clave) cache.set(clave, url);
+  return url;
+}
+
 /** Foto pequeña del producto, o el ícono de su categoría si no tiene foto. */
-export default function MiniaturaProducto({ producto, tam = 48 }) {
-  const [url, setUrl] = useState(null);
-  const imagen = producto?.imagen instanceof Blob ? producto.imagen : null;
-
-  useEffect(() => {
-    if (!imagen) { setUrl(null); return; }
-    const u = URL.createObjectURL(imagen);
-    setUrl(u);
-    return () => URL.revokeObjectURL(u);
-  }, [imagen]);
-
+export default function MiniaturaProducto({ producto, tam = 48, className = "" }) {
+  const url = urlDe(producto);
   const Icono = ICONOS[categoriaDe(producto)] || Package;
   return (
-    <span className={"mini-prod" + (url ? " con-foto" : "")} style={{ width: tam, height: tam }} aria-hidden="true">
+    <span className={"mini-prod" + (url ? " con-foto" : "") + (className ? " " + className : "")} style={{ width: tam, height: tam }} aria-hidden="true">
       {url ? <img src={url} alt="" loading="lazy" /> : <Icono size={Math.round(tam * 0.46)} strokeWidth={1.7} />}
     </span>
   );

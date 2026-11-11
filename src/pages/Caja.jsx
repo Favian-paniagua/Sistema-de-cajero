@@ -9,9 +9,10 @@ import Cobro from "../components/Cobro";
 import BuscadorProducto from "../components/BuscadorProducto";
 import { LockKeyholeOpen, Minus, Plus, ScanBarcode, ShoppingCart } from "lucide-react";
 import { EsqueletoCaja } from "../components/Esqueletos";
+import MiniaturaProducto from "../components/MiniaturaProducto";
 
 /** Lista del carrito con botones para sumar o restar; al restar con 1 unidad se quita (se muestra dentro del escáner). */
-function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
+function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio, porId }) {
   if (!carrito.length) {
     return <ul className="cart-list"><li style={{ display: "block", border: 0 }}><div className="empty"><div className="ico"><ShoppingCart size={34} strokeWidth={1.5} /></div>{vacio}</div></li></ul>;
   }
@@ -19,6 +20,7 @@ function ListaCarrito({ carrito, resaltado, cambiarCantidad, vacio }) {
     <ul className="cart-list">
       {carrito.map((i) => (
         <li key={i.productoId} className={i.productoId === resaltado ? "flash" : ""}>
+          <MiniaturaProducto producto={porId?.get(i.productoId) || i} tam={44} />
           <div className="ci-name">{i.nombre}</div>
           <div className="ci-sub num">{dinero(i.precio * i.cantidad)}</div>
           <div className="ci-meta num">{dinero(i.precio)} c/u</div>
@@ -80,6 +82,7 @@ function AperturaCaja({ onAbierta }) {
 export default function Caja({ carrito, setCarrito }) {
   const { avisar } = useAvisos();
   const productos = useLiveQuery(() => db.productos.toArray(), [], []);
+  const porId = useMemo(() => new Map(productos.map((p) => [p.id, p])), [productos]);
   // Turno actual: la apertura en curso y lo vendido desde entonces
   const turno = useLiveQuery(async () => {
     const apertura = await aperturaActual();
@@ -169,7 +172,7 @@ export default function Caja({ carrito, setCarrito }) {
           onElegir={(p) => { agregar(p); setUltimoEscaneo((u) => ({ tipo: "ok", texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 })); }}
           onCodigo={porCodigoEscaner} />}>
         <div className="sp-list">
-          <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad}
+          <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad} porId={porId}
             vacio="Apunta la cámara al código de barras. Los productos aparecerán aquí." />
         </div>
         <div className="sp-foot">

@@ -1,5 +1,6 @@
 import { forwardRef, useMemo, useState } from "react";
 import { dinero } from "../lib/formato";
+import MiniaturaProducto from "./MiniaturaProducto";
 
 /**
  * Campo para agregar productos escribiendo su nombre o código.
@@ -51,7 +52,8 @@ const BuscadorProducto = forwardRef(function BuscadorProducto(
         <div className="sugg" style={{ display: "block" }}>
           {sugerencias.map((p, i) => (
             <button key={p.id} className={i === sel ? "hl" : ""} onMouseDown={(e) => e.preventDefault()} onClick={() => elegir(p)}>
-              <span>{p.nombre}</span><span className="sub num">{dinero(p.precio)}</span>
+              <MiniaturaProducto producto={p} tam={34} />
+              <span className="sug-nombre">{p.nombre}</span><span className="sub num">{dinero(p.precio)}</span>
             </button>
           ))}
         </div>
