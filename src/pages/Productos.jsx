@@ -9,7 +9,7 @@ import { Package, PackagePlus, TriangleAlert } from "lucide-react";
 import { EsqueletoFilasProductos, Sk } from "../components/Esqueletos";
 
 
-/** Inventario: lista por categoría, búsqueda, alta y edición de productos. */
+/** Inventario: lista con filtro por categoría y búsqueda; alta y edición de productos. */
 export default function Productos() {
   const { avisar } = useAvisos();
   const productos = useLiveQuery(() => db.productos.orderBy("nombre").toArray(), [], null);
@@ -26,13 +26,6 @@ export default function Productos() {
     const okTexto = !t || p.nombre.toLowerCase().includes(t) || String(p.codigo).includes(t);
     return okTexto && (catFiltro === "todas" || categoriaDe(p) === catFiltro);
   });
-
-  // Agrupados por categoría cuando se ven todas
-  const grupos = useMemo(() => {
-    if (catFiltro !== "todas") return [[catFiltro, lista]];
-    return categorias.map(([c]) => [c, lista.filter((p) => categoriaDe(p) === c)]).filter(([, ps]) => ps.length);
-  }, [catFiltro, categorias, lista]);
-  const mostrarTitulos = catFiltro === "todas";
 
   const fila = (p) => {
     const bajo = (p.stock || 0) <= (p.minimo || 0);
@@ -80,12 +73,9 @@ export default function Productos() {
             Aún no hay productos.<br />Toca “Nuevo producto” para registrar el primero, con su categoría.</div>
         ) : lista.length === 0 ? (
           <div className="empty">{q ? <>Nada coincide con “{q}”.</> : "No hay productos en esta categoría."}</div>
-        ) : grupos.map(([c, ps]) => (
-          <div key={c} className="grupo-cat">
-            {mostrarTitulos && <h3 className="cat-titulo">{c} <span>{ps.length}</span></h3>}
-            <ul className="plist">{ps.map(fila)}</ul>
-          </div>
-        ))}
+        ) : (
+          <ul className="plist">{lista.map(fila)}</ul>
+        )}
       </div>
 
       {editando && (

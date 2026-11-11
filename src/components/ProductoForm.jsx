@@ -70,13 +70,11 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
           </div>
           <label className="l mt" htmlFor="f_nombre">Nombre</label>
           <input className="f" id="f_nombre" value={f.nombre} onChange={cambiar("nombre")} placeholder="Ej. Coca-Cola 2L" autoFocus={!!f.codigo && !editando} />
-          <label className="l mt" id="f_cat_l">Categoría</label>
-          <div className="cat-grid" role="radiogroup" aria-labelledby="f_cat_l">
-            {CATEGORIAS.map((c) => (
-              <button type="button" key={c} role="radio" aria-checked={f.categoria === c}
-                className={"chip" + (f.categoria === c ? " on" : "")} onClick={() => setF({ ...f, categoria: c })}>{c}</button>
-            ))}
-          </div>
+          <label className="l mt" htmlFor="f_cat">Categoría</label>
+          <select className={"f select" + (f.categoria ? "" : " vacio")} id="f_cat" value={f.categoria} onChange={cambiar("categoria")}>
+            {!f.categoria && <option value="" disabled>Elige una categoría</option>}
+            {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
           <div className="grid2 mt">
             <div><label className="l" htmlFor="f_precio">Precio de venta (Bs)</label><input className="f num" id="f_precio" inputMode="decimal" value={f.precio} onChange={cambiar("precio")} placeholder="0,00" /></div>
             <div><label className="l" htmlFor="f_costo">Costo (Bs)</label><input className="f num" id="f_costo" inputMode="decimal" value={f.costo} onChange={cambiar("costo")} placeholder="0,00" /></div>
