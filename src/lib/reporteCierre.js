@@ -117,18 +117,37 @@ export async function generarPdfCierre({ ventas, cierre, nombreNegocio = "Mi Caj
   };
   const seguir = () => { y = doc.lastAutoTable.finalY + 10; };
 
-  /* Efectivo en caja: efectivo inicial de la apertura + ventas en efectivo */
+  /* Efectivo en caja: inicial + ventas en efectivo = esperado; y lo que contó el cajero */
   const inicial = Number(cierre.efectivoInicial) || 0;
   const ventasEfectivo = resumen.porMetodo.efectivo?.total || 0;
+  const esperado = cierre.efectivoEsperado ?? r2(inicial + ventasEfectivo);
+  const hayArqueo = cierre.efectivoContado != null;
   titulo("Efectivo en caja");
+  const cabeza = ["Efectivo inicial", "Ventas en efectivo", "Esperado"];
+  const fila = [bs(inicial), bs(ventasEfectivo), bs(esperado)];
+  if (hayArqueo) {
+    const d = Number(cierre.diferencia) || 0;
+    const etiqueta = d === 0 ? "Cuadra" : d > 0 ? "Sobrante" : "Faltante";
+    cabeza.push("Contado", "Diferencia");
+    fila.push(bs(cierre.efectivoContado), `${d > 0 ? "+" : d < 0 ? "-" : ""}${bs(Math.abs(d))} (${etiqueta})`);
+  }
+  const colorDif = (d) => (d === 0 ? [0, 120, 0] : d > 0 ? [150, 100, 0] : [190, 40, 40]);
   autoTable(doc, {
     ...estilo, startY: y,
-    head: [["Efectivo inicial (apertura)", "Ventas en efectivo", "Efectivo esperado al cierre"]],
-    body: [[bs(inicial), bs(ventasEfectivo), bs(inicial + ventasEfectivo)]],
-    columnStyles: { 0: { halign: "right" }, 1: { halign: "right" }, 2: { halign: "right", fontStyle: "bold" } },
-    didParseCell: (d) => { if (d.section === "head") d.cell.styles.halign = "right"; },
+    head: [cabeza], body: [fila],
+    styles: { ...estilo.styles, halign: "right" },
+    didParseCell: (c) => {
+      if (c.section === "head") c.cell.styles.halign = "right";
+      if (c.section === "body" && c.column.index === 2) c.cell.styles.fontStyle = "bold";
+      if (c.section === "body" && hayArqueo && c.column.index === 4) { c.cell.styles.fontStyle = "bold"; c.cell.styles.textColor = colorDif(Number(cierre.diferencia) || 0); }
+    },
   });
   seguir();
+  if (hayArqueo && cierre.observacion) {
+    doc.setTextColor(...GRIS); doc.setFont("helvetica", "italic"); doc.setFontSize(9.5);
+    const lineas = doc.splitTextToSize(limpiar(`Observación del cajero: ${cierre.observacion}`), W - 2 * M);
+    doc.text(lineas, M, y - 5); y += lineas.length * 4.5 + 2;
+  }
 
   if (!ventas.length) {
     doc.setTextColor(...GRIS); doc.setFont("helvetica", "normal"); doc.setFontSize(11);

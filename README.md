@@ -8,7 +8,7 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
 - **Productos**: inventario con filtro por categoría (Todas, Lácteos, Limpieza, Bebidas, Cuidado personal, Snacks, Panadería, Alimentos, Otros) y búsqueda; stock, costo y alerta de stock mínimo. Cada producto muestra su foto a la izquierda (o un ícono según su categoría si no tiene). Al registrar o editar un producto se puede agregar una foto (se achica para ocupar poco) y la categoría se elige de una lista desplegable (obligatoria). Las categorías se cambian en `src/lib/categorias.js`.
 - **Dashboard**: ventas, ganancia estimada, número de ventas y ticket promedio (hoy, 7 días, 30 días, este mes), gráfico por hora o por día, productos más vendidos, formas de pago, stock bajo, últimas ventas (con opción de anular).
 - **Cierre**:
-  - **Cerrar caja**: cierra el turno abierto y descarga un reporte PDF (efectivo inicial y efectivo esperado, total vendido, ganancia, ventas por forma de pago, cuánto se vendió de cada producto y el detalle de cada venta). Después hay que volver a abrir la caja para vender. También se puede volver a descargar el reporte del último cierre.
+  - **Cerrar caja** (arqueo): muestra el resumen del turno y el efectivo que debería haber (inicial + ventas en efectivo); el cajero cuenta el efectivo (escribiendo el total o por billetes y monedas), el sistema muestra si cuadra, sobra o falta, se puede anotar una observación y se confirma el cierre. Se guarda el resultado y se descarga un PDF con el arqueo, ventas por forma de pago, productos vendidos y detalle de ventas. Después hay que volver a abrir la caja para vender.
   - **Exportar a Excel**: todas las ventas registradas juntas (todos los días, meses y años) en un .xlsx con tres hojas: Ventas (con totales), Detalle por producto e Inventario.
 
 ## Tecnologías
@@ -88,6 +88,7 @@ src/
     repositorio.js      todas las operaciones de datos (productos, ventas, cierres)
   lib/
     formato.js          formato de dinero (Bs) y fechas
+    arqueo.js           efectivo esperado, conteo por billetes/monedas y diferencia
     categorias.js       lista fija de categorías de productos
     imagen.js           achica las fotos de productos antes de guardarlas
     bloquearScroll.js   congela la página de fondo mientras hay una ventana abierta

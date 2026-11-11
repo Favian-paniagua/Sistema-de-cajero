@@ -9,7 +9,8 @@ import Dexie from "dexie";
  *  - productos: { id, codigo, nombre, categoria, imagen (Blob), precio, costo, stock, minimo, actualizado }
  *  - ventas:    { id, ts, dia, hora, metodo, total, costoTotal, unidades, recibido, cambio, items[] }
  *  - aperturas: { id, ts, dia, efectivoInicial, cerradaTs, cierreId }   (un registro por cada apertura de caja)
- *  - cierres:   { id, ts, dia, aperturaId, aperturaTs, efectivoInicial, total, costo, ganancia, ventas, unidades, porMetodo }
+ *  - cierres:   { id, ts, dia, aperturaId, aperturaTs, efectivoInicial, total, costo, ganancia, ventas, unidades, porMetodo,
+ *                 efectivoEsperado, efectivoContado, diferencia, tipoDiferencia, observacion, conteo }
  */
 export const db = new Dexie("sistema-de-cajero");
 

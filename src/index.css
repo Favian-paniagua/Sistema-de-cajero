@@ -278,3 +278,46 @@ select.f.select option{color:var(--text)}
 .cart-list .mini-prod{border-radius:11px}
 .scan-search .sugg .mini-prod{background:rgba(255,255,255,.14);color:rgba(255,255,255,.85)}
 .scan-search .sugg .mini-prod.con-foto{background:#fff}
+
+/* CIERRE: resumen del turno */
+.resumen-turno > div.destacado{background:var(--accent-soft)}
+.resumen-turno > div.destacado b{color:var(--accent)}
+.metodos-turno{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.metodos-turno li{display:flex;align-items:center;gap:8px;font-size:14px}
+.metodos-turno i{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.metodos-turno span{margin-left:auto;color:var(--text-2)}
+
+/* CIERRE: arqueo (conteo del efectivo) */
+.arqueo .volver{min-height:36px;padding:4px 8px 4px 2px;margin:-6px 0 6px -4px}
+.esperado{background:var(--surface-2);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.esperado b{font-size:30px;font-weight:750;letter-spacing:-.02em;line-height:1.15}
+.arqueo-titulo{font-size:15px;margin:20px 0 10px}
+.seg.seg2{grid-template-columns:repeat(2,1fr)}
+.contado-input{font-size:26px!important;font-weight:700;min-height:58px!important}
+.denominaciones{display:flex;flex-direction:column;gap:14px}
+.den-grupo{display:flex;flex-direction:column;gap:6px}
+.den-fila{display:grid;grid-template-columns:72px 14px 84px 1fr;align-items:center;gap:8px}
+.den-valor{font-weight:650}
+.den-x{color:var(--muted);text-align:center}
+.den-input{min-height:40px!important;padding:6px 10px!important;text-align:center}
+.den-sub{text-align:right;color:var(--text-2)}
+.den-total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--border);padding-top:10px}
+.den-total b{font-size:20px}
+.comparacion{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;width:100%}
+.comparacion > div{background:var(--surface-2);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.comparacion b{font-size:18px}
+.dif{display:flex;align-items:center;gap:8px;font-weight:650;font-size:14px;padding:8px 12px;border-radius:12px;width:fit-content}
+.dif.grande{width:100%;font-size:17px;padding:14px 16px}
+.dif-cuadra{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good-ink)}
+.dif-sobrante{background:color-mix(in srgb,var(--warning) 22%,transparent);color:color-mix(in srgb,var(--warning) 35%,var(--text))}
+.dif-faltante{background:color-mix(in srgb,var(--critical) 14%,transparent);color:var(--critical)}
+.dif-vacia{background:var(--surface-2);border-radius:12px;padding:12px 14px;margin:0}
+
+/* CIERRE: resultado */
+.resultado-cierre{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:6px 0}
+.resultado-cierre h3{margin:0;font-size:20px}
+.resultado-cierre p{margin:0}
+.resultado-ico{width:60px;height:60px;border-radius:18px;display:grid;place-items:center}
+.resultado-ico.dif-cuadra,.resultado-ico.dif-sobrante,.resultado-ico.dif-faltante{padding:0}
+.resultado-cierre .obs{font-style:italic}
+.ultimo-cierre{background:var(--surface-2);border-radius:14px;padding:14px 16px;margin-top:12px}
