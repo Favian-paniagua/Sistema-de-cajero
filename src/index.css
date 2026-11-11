@@ -266,3 +266,10 @@ select.f.select option{color:var(--text)}
 .mini-prod.con-foto{background:var(--surface)}
 .mini-prod img{width:100%;height:100%;object-fit:cover;display:block}
 .sk-mini{grid-row:1 / span 2;align-self:center}
+
+/* Productos: buscador y botón "Nuevo producto" siempre en la misma fila */
+.barra-productos{display:flex;gap:10px;align-items:stretch}
+.barra-productos input.f{flex:1;min-width:0}
+.barra-productos .btn{flex-shrink:0;white-space:nowrap}
+.barra-productos .txt-corto{display:none}
+@media(max-width:379px){.barra-productos .txt-largo{display:none}.barra-productos .txt-corto{display:inline}}

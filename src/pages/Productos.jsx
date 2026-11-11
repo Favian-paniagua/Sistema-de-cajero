@@ -43,9 +43,11 @@ export default function Productos() {
 
   return (
     <section className="view on">
-      <div className="row" style={{ flexWrap: "wrap" }}>
-        <input className="f" placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} style={{ flex: 1, minWidth: 200 }} />
-        <button className="btn primary" onClick={() => setEditando({})}><PackagePlus size={18} /> Nuevo producto</button>
+      <div className="barra-productos">
+        <input className="f" placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar producto" />
+        <button className="btn primary" onClick={() => setEditando({})} aria-label="Nuevo producto">
+          <PackagePlus size={18} /><span className="txt-largo">Nuevo producto</span><span className="txt-corto">Nuevo</span>
+        </button>
       </div>
 
       {productos && (
