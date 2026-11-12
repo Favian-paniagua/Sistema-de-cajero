@@ -65,10 +65,6 @@ Solo hay que activarlo una vez:
 
 Después, abre el enlace en el celular y usa "Agregar a la pantalla de inicio" para tenerlo como app.
 
-## Demostración (PWA)
-
-`public/demo/` contiene una versión de demostración ya compilada, con datos simulados (productos, 60 días de ventas y cierres) que se reinician cada vez que se abre. El escáner se simula tocando la imagen. Se publica en `…/Sistema-de-cajero/demo/` y se puede instalar como app (PWA): en el celular, abre el enlace y elige **Instalar app** o **Agregar a pantalla de inicio**; se abrirá sin la barra del navegador.
-
 ## Dónde se guardan los datos
 
 Los productos y las ventas se guardan **en el navegador del dispositivo** (IndexedDB). Por eso:
