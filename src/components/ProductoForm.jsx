@@ -7,6 +7,7 @@ import { guardarProducto, eliminarProducto } from "../db/repositorio";
 import { CATEGORIAS, categoriaDe } from "../lib/categorias";
 import { ImagePlus, ScanBarcode, X } from "lucide-react";
 import { prepararImagen } from "../lib/imagen";
+import { useLector } from "../lib/lector";
 
 const aTexto = (n) => (n == null || n === "" ? "" : String(n).replace(".", ","));
 
@@ -28,6 +29,13 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
     imagen: producto?.imagen instanceof Blob ? producto.imagen : null,
   });
   const archivo = useRef(null);
+  const campoNombre = useRef(null);
+
+  // Lector USB con el formulario abierto: llena el código y pasa al nombre
+  useLector((codigo) => {
+    setF((x) => ({ ...x, codigo }));
+    setTimeout(() => campoNombre.current?.focus(), 0);
+  });
   const [vistaPrevia, setVistaPrevia] = useState(null);
   const [cargandoImg, setCargandoImg] = useState(false);
 
@@ -101,11 +109,13 @@ export default function ProductoForm({ producto, titulo, nota, textoGuardar, onC
           </div>
           <label className="l" htmlFor="f_codigo">Código de barras</label>
           <div className="row">
-            <input className="f num" id="f_codigo" value={f.codigo} onChange={cambiar("codigo")} placeholder="Ej. 7771234567890" />
+            <input className="f num" id="f_codigo" value={f.codigo} onChange={cambiar("codigo")} placeholder="Ej. 7771234567890"
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => { if (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey && f.codigo)) { e.preventDefault(); campoNombre.current?.focus(); } }} />
             <button type="button" className="btn icon" onClick={() => setEscaneando(true)} aria-label="Escanear código" style={{ minHeight: 46, minWidth: 46 }}><ScanBarcode size={20} /></button>
           </div>
           <label className="l mt" htmlFor="f_nombre">Nombre</label>
-          <input className="f" id="f_nombre" value={f.nombre} onChange={cambiar("nombre")} placeholder="Ej. Coca-Cola 2L" />
+          <input ref={campoNombre} className="f" id="f_nombre" value={f.nombre} onChange={cambiar("nombre")} placeholder="Ej. Coca-Cola 2L" />
           <label className="l mt" htmlFor="f_cat">Categoría</label>
           <select className={"f select" + (f.categoria ? "" : " vacio")} id="f_cat" value={f.categoria} onChange={cambiar("categoria")}>
             {!f.categoria && <option value="" disabled>Elige una categoría</option>}

@@ -333,3 +333,12 @@ select.f.select option{color:var(--text)}
 @media(max-width:374px){.modo-op{font-size:12px;gap:4px;padding:8px 4px}}
 .modo-op.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .modo-o{align-self:center;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--text-2);font-weight:700;font-size:13px}
+
+/* CAJA EN COMPUTADORA (lector USB) */
+.venta-pc{min-height:420px}
+.lector-listo{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--good-ink);background:color-mix(in srgb,var(--good) 12%,transparent);padding:4px 10px;border-radius:999px}
+.aviso-lectura{margin-top:10px;padding:10px 14px;border-radius:12px;font-weight:650;font-size:14px;animation:pill .25s ease}
+.aviso-lectura.ok{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good-ink)}
+.aviso-lectura.error{background:var(--critical);color:#fff}
+.mb{margin-bottom:12px}
+kbd{font:600 11px/1 system-ui,sans-serif;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.22);margin-left:6px}

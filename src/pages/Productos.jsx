@@ -8,6 +8,9 @@ import ProductoForm from "../components/ProductoForm";
 import { Package, PackagePlus, TriangleAlert } from "lucide-react";
 import { EsqueletoFilasProductos, Sk } from "../components/Esqueletos";
 import MiniaturaProducto from "../components/MiniaturaProducto";
+import { useLector } from "../lib/lector";
+import { entregar } from "../lib/sonido";
+import { buscarPorCodigo } from "../db/repositorio";
 
 
 /** Inventario: lista con filtro por categoría y búsqueda; alta y edición de productos. */
@@ -15,8 +18,18 @@ export default function Productos() {
   const { avisar } = useAvisos();
   const productos = useLiveQuery(() => db.productos.orderBy("nombre").toArray(), [], null);
   const [q, setQ] = useState("");
+
+  /** Código leído con el lector (o escrito + Enter en el buscador): abre el producto, o uno nuevo con ese código. */
+  async function abrirPorCodigo(codigo) {
+    const p = await buscarPorCodigo(codigo);
+    setQ("");
+    if (p) { setEditando(p); avisar("Editando: " + p.nombre, 1800); }
+    else setEditando({ codigo });
+    return true;
+  }
   const [categoria, setCategoria] = useState("todas");
   const [editando, setEditando] = useState(null);   // {} = nuevo, {id…} = editar
+  useLector(abrirPorCodigo, !editando);
 
   // Todas las categorías fijas, con su cantidad de productos
   const categorias = useMemo(() => CATEGORIAS.map((c) => [c, (productos || []).filter((p) => categoriaDe(p) === c).length]), [productos]);
@@ -44,7 +57,13 @@ export default function Productos() {
   return (
     <section className="view on">
       <div className="barra-productos">
-        <input className="f" placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar producto" />
+        <input className="f" placeholder="Buscar o escanear producto…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar producto"
+          onKeyDown={(e) => {
+            const v = q.trim();
+            if (e.key !== "Enter" || !v) return;
+            const exacto = (productos || []).find((p) => String(p.codigo) === v);
+            if (exacto || /^\d{4,}$/.test(v)) { e.preventDefault(); entregar(abrirPorCodigo, v); }
+          }} />
         <button className="btn primary" onClick={() => setEditando({})} aria-label="Nuevo producto">
           <PackagePlus size={18} /><span className="txt-largo">Nuevo producto</span><span className="txt-corto">Nuevo</span>
         </button>

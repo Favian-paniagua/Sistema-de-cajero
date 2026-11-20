@@ -11,6 +11,17 @@ Punto de venta para un local pequeño: escaneas productos con la cámara del cel
   - **Cerrar caja** (arqueo): muestra el resumen del turno y el efectivo que debería haber (inicial + ventas en efectivo); el cajero cuenta el efectivo (escribiendo el total o por billetes y monedas), el sistema muestra si cuadra, sobra o falta, se puede anotar una observación y se confirma el cierre. Se guarda el resultado y se descarga un PDF con el arqueo, ventas por forma de pago, productos vendidos y detalle de ventas. Después hay que volver a abrir la caja para vender.
   - **Exportar a Excel**: todas las ventas registradas juntas (todos los días, meses y años) en un .xlsx con tres hojas: Ventas (con totales), Detalle por producto e Inventario.
 
+## Lector de códigos USB (computadora)
+
+Los lectores USB o Bluetooth funcionan como un teclado (escriben el código y presionan Enter): no necesitan drivers.
+Solo revisa en su manual que agreguen **Enter al final** y que el idioma del teclado coincida con el de la computadora.
+
+- **Caja** (pantalla de computadora): muestra el carrito, el buscador, el total y **Cobrar (F2)**. Cada código leído se suma al carrito con un pitido; si no está registrado, aparece un **aviso rojo** con tono de error. La cámara queda disponible con "Usar la cámara".
+- **Productos**: al escanear un código que ya existe se abre ese producto; si es nuevo, se abre **Nuevo producto** con el código cargado.
+- **Formulario de producto**: el lector llena el código y el cursor pasa a **Nombre** (el Enter del lector no envía el formulario).
+
+La app distingue al lector de una persona por la velocidad de escritura (`src/lib/lector.js`).
+
 ## Tecnologías
 
 | Tecnología | Para qué se usa |
@@ -88,6 +99,8 @@ src/
     repositorio.js      todas las operaciones de datos (productos, ventas, cierres)
   lib/
     formato.js          formato de dinero (Bs) y fechas
+    lector.js           detecta el lector USB (escritura rápida + Enter)
+    sonido.js           pitidos de lectura correcta y de error
     arqueo.js           efectivo esperado, conteo por billetes/monedas y diferencia
     categorias.js       lista fija de categorías de productos
     imagen.js           achica las fotos de productos antes de guardarlas

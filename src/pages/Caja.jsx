@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db/database";
 import { buscarPorCodigo, registrarVenta, aperturaActual, abrirCaja, ventasDelTurno } from "../db/repositorio";
@@ -7,7 +7,9 @@ import { useAvisos } from "../components/Avisos";
 import Escaner from "../components/EscanerLazy";
 import Cobro from "../components/Cobro";
 import BuscadorProducto from "../components/BuscadorProducto";
-import { LockKeyholeOpen, Minus, Plus, ScanBarcode, ShoppingCart } from "lucide-react";
+import { Camera, LockKeyholeOpen, Minus, Plus, ScanBarcode, ShoppingCart } from "lucide-react";
+import { useLector, useEsComputadora } from "../lib/lector";
+import { entregar } from "../lib/sonido";
 import { EsqueletoCaja } from "../components/Esqueletos";
 import MiniaturaProducto from "../components/MiniaturaProducto";
 
@@ -78,7 +80,11 @@ function AperturaCaja({ onAbierta }) {
   );
 }
 
-/** Pantalla de venta: apertura de caja y botón para escanear (el carrito y el cobro están en el escáner). */
+/**
+ * Pantalla de venta.
+ * - Celular: botón grande para abrir la cámara (el carrito y el cobro están en el escáner).
+ * - Computadora: carrito, buscador, total y Cobrar en la misma pantalla; se escanea con un lector USB.
+ */
 export default function Caja({ carrito, setCarrito }) {
   const { avisar } = useAvisos();
   const productos = useLiveQuery(() => db.productos.toArray(), [], []);
@@ -93,6 +99,7 @@ export default function Caja({ carrito, setCarrito }) {
   const [ultimoEscaneo, setUltimoEscaneo] = useState(null);
   const [cobrando, setCobrando] = useState(false);
   const [resaltado, setResaltado] = useState(null);
+  const esComputadora = useEsComputadora();
 
   const totales = useMemo(() => ({
     total: Math.round(carrito.reduce((a, i) => a + i.precio * i.cantidad, 0) * 100) / 100,
@@ -122,6 +129,9 @@ export default function Caja({ carrito, setCarrito }) {
   }
 
 
+  /** Código escrito en el buscador (o leído con el lector mientras el cursor está en el buscador). */
+  const entregarCodigo = (c) => entregar(porCodigoEscaner, c);
+
   const cambiarCantidad = (id, delta) =>
     setCarrito((c) => c.map((x) => (x.productoId === id ? { ...x, cantidad: x.cantidad + delta } : x)).filter((x) => x.cantidad > 0));
 
@@ -139,21 +149,75 @@ export default function Caja({ carrito, setCarrito }) {
   const vendido = (turno?.ventas || []).reduce((a, v) => a + v.total, 0);
   const apertura = turno?.apertura;
 
+  // Lector USB: en computadora, con la caja abierta, cada código leído se suma al carrito
+  // (o muestra el aviso rojo si no está registrado). Mientras se cobra, no hace nada.
+  useLector(porCodigoEscaner, esComputadora && !!apertura && !cobrando);
+
+  // F2 = Cobrar (computadora)
+  useEffect(() => {
+    if (!esComputadora || !apertura) return;
+    const tecla = (e) => {
+      if (e.key === "F2" && !cobrando && carrito.length) { e.preventDefault(); setEscaneando(false); setCobrando(true); }
+    };
+    window.addEventListener("keydown", tecla);
+    return () => window.removeEventListener("keydown", tecla);
+  }, [esComputadora, apertura, cobrando, carrito.length]);
+
+  // El aviso de la última lectura se borra solo después de unos segundos
+  useEffect(() => {
+    if (!ultimoEscaneo || escaneando) return;
+    const t = setTimeout(() => setUltimoEscaneo(null), ultimoEscaneo.tipo === "error" ? 6000 : 3500);
+    return () => clearTimeout(t);
+  }, [ultimoEscaneo, escaneando]);
+
+  const elegirProducto = (p) => { agregar(p); setUltimoEscaneo((u) => ({ tipo: "ok", texto: `+1 ${p.nombre} · ${dinero(p.precio)}`, n: (u?.n || 0) + 1 })); };
+
   if (!turno) return <EsqueletoCaja />;
   if (!apertura) return <section className="view on"><div className="caja-sola"><AperturaCaja /></div></section>;
 
   return (
     <section className="view on">
       <div className="caja">
-        <div className="card pad scan-hero">
-          <button className="scan-big" onClick={() => { setUltimoEscaneo(null); setEscaneando(true); }}>
-            <ScanBarcode size={56} strokeWidth={1.8} />
-            <span>Escanear</span>
-          </button>
-          <p className="sub">Toca para abrir la cámara. Ahí también puedes buscar por nombre o código y ajustar las cantidades.</p>
-        </div>
+        {esComputadora ? (
+          <div className="card pad venta-pc">
+            <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>
+              <h2 style={{ margin: 0 }}>Venta actual</h2>
+              <span className="lector-listo"><ScanBarcode size={16} /> Lector listo</span>
+            </div>
+            <BuscadorProducto productos={productos} alto={48} placeholder="Escanea con el lector, o busca por nombre o código"
+              onElegir={elegirProducto} onCodigo={(c) => entregarCodigo(c)} />
+            {ultimoEscaneo && (
+              <div key={ultimoEscaneo.n} className={"aviso-lectura " + ultimoEscaneo.tipo} role="status">{ultimoEscaneo.texto}</div>
+            )}
+            <div className="mt">
+              <ListaCarrito carrito={carrito} resaltado={resaltado} cambiarCantidad={cambiarCantidad} porId={porId}
+                vacio="Escanea un producto con el lector o búscalo por nombre o código." />
+            </div>
+          </div>
+        ) : (
+          <div className="card pad scan-hero">
+            <button className="scan-big" onClick={() => { setUltimoEscaneo(null); setEscaneando(true); }}>
+              <ScanBarcode size={56} strokeWidth={1.8} />
+              <span>Escanear</span>
+            </button>
+            <p className="sub">Toca para abrir la cámara. Ahí también puedes buscar por nombre o código y ajustar las cantidades.</p>
+          </div>
+        )}
 
         <div className="pay-col">
+          {esComputadora && (
+            <div className="card pad total-box mb">
+              <div className="lbl">Total a cobrar</div>
+              <div className="amt num">{dinero(totales.total)}</div>
+              <div className="meta">{totales.unidades ? `${totales.unidades} ${totales.unidades === 1 ? "producto" : "productos"}` : "Sin productos"}</div>
+              <button className="btn primary big mt2" style={{ width: "100%" }} disabled={!carrito.length} onClick={() => setCobrando(true)}>
+                Cobrar <kbd>F2</kbd>
+              </button>
+              <button className="btn ghost mt" style={{ width: "100%" }} onClick={() => { setUltimoEscaneo(null); setEscaneando(true); }}>
+                <Camera size={18} /> Usar la cámara
+              </button>
+            </div>
+          )}
           <div className="card pad">
             <div className="row" style={{ justifyContent: "space-between" }}>
               <div><div className="sub">Vendido en este turno</div><div className="num" style={{ fontSize: 22, fontWeight: 700 }}>{dinero(vendido)}</div></div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Camera, X } from "lucide-react";
+import { pitido, entregar } from "../lib/sonido";
 
 /**
  * Escáner de códigos de barras con la cámara del celular, en vivo.
@@ -22,28 +23,6 @@ function crearLector() {
   hints.set(DecodeHintType.POSSIBLE_FORMATS, FORMATOS);
   hints.set(DecodeHintType.TRY_HARDER, true);
   return new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 80, delayBetweenScanSuccess: 300 });
-}
-
-/** Pitido agudo y corto si se leyó bien; grave y largo si el código no sirve (error). */
-function pitido(error = false) {
-  try {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    const ctx = pitido.ctx || (pitido.ctx = new Ctx());
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    const dur = error ? 0.3 : 0.12;
-    o.frequency.value = error ? 320 : 1650; o.type = "square";
-    g.gain.setValueAtTime(0.08, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-    o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur + 0.01);
-  } catch { /* sin sonido */ }
-  try { navigator.vibrate?.(error ? [90, 60, 90] : 40); } catch { /* sin vibración */ }
-}
-
-/** Avisa al componente padre y suena según la respuesta (false = código no válido). */
-async function entregar(cb, codigo) {
-  let ok = true;
-  try { ok = (await cb?.(codigo)) !== false; } catch { ok = false; }
-  pitido(!ok);
 }
 
 export default function Escaner({ abierto, continuo = false, onCodigo, onCerrar, resultado, barra, children }) {
